@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -31,8 +30,8 @@ export default function CelestialBackground() {
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // Planets with textures
-    const planetTextures = [
+    // Planet textures
+    const planetsData = [
       { name: "earth", url: "https://raw.githubusercontent.com/itsron717/planet-textures/main/earth.jpg" },
       { name: "jupiter", url: "https://raw.githubusercontent.com/itsron717/planet-textures/main/jupiter.jpg" },
       { name: "saturn", url: "https://raw.githubusercontent.com/itsron717/planet-textures/main/saturn.jpg" },
@@ -40,17 +39,14 @@ export default function CelestialBackground() {
     ];
 
     const planets = [];
-    const loaders = planetTextures.map((planet, index) => {
+    const loaders = planetsData.map((planet, index) => {
       return new Promise(resolve => {
         new THREE.TextureLoader().load(planet.url, texture => {
-          const geometry = new THREE.SphereGeometry(0.01, 32, 32); // start small
-          const material = new THREE.MeshBasicMaterial({ map: texture });
+          const geometry = new THREE.SphereGeometry(0.3, 32, 32);
+          const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 });
           const mesh = new THREE.Mesh(geometry, material);
-          mesh.userData = {
-            scaleTarget: 0.8 + Math.random() * 0.4,
-            phase: index * 2
-          };
-          mesh.position.set(Math.sin(index) * 3, Math.cos(index) * 2, -4 - index);
+          mesh.position.set(0, 0, -5);
+          mesh.scale.set(0.001, 0.001, 0.001); // start as dot
           scene.add(mesh);
           planets.push(mesh);
           resolve();
@@ -59,17 +55,31 @@ export default function CelestialBackground() {
     });
 
     Promise.all(loaders).then(() => {
+      let current = 0;
       const animate = () => {
         requestAnimationFrame(animate);
-
-        // Rotate star field
         stars.rotation.y += 0.0007;
 
-        // Animate planets
-        const time = Date.now() * 0.001;
+        // Animate planets in sequence
         planets.forEach((planet, i) => {
-          const scale = 0.01 + Math.abs(Math.sin(time + planet.userData.phase)) * planet.userData.scaleTarget;
-          planet.scale.set(scale, scale, scale);
+          const active = i === current;
+          const scale = planet.scale.x;
+
+          if (active) {
+            if (scale < 1) {
+              planet.scale.multiplyScalar(1.05);
+              planet.material.opacity = Math.min(1, planet.material.opacity + 0.02);
+            } else {
+              setTimeout(() => {
+                planet.scale.set(0.001, 0.001, 0.001);
+                planet.material.opacity = 0;
+                current = (current + 1) % planets.length;
+              }, 1000);
+            }
+          } else {
+            planet.scale.set(0.001, 0.001, 0.001);
+            planet.material.opacity = 0;
+          }
         });
 
         renderer.render(scene, camera);
