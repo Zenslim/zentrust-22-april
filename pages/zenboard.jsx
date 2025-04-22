@@ -2,13 +2,12 @@ import AmbientAudio from '@/components/AmbientAudio';
 import { useState } from 'react';
 import CelestialBackground from '@/components/CelestialBackground';
 import PlanetMessenger from '@/components/PlanetMessenger';
-import Ikigai from '@/components/ikigai';
 import CosmicWhisper from '@/components/CosmicWhisper';
 import MoonSync from '@/components/MoonSync';
 import JournalPrompt from '@/components/JournalPrompt';
-import JournalDrawer from '@/components/JournalDrawer';
-import TimelineDrawer from '@/components/TimelineDrawer';
-import TimelineButton from '@/components/TimelineButton';
+import JournalDrawer from '@/components/ZenJoystick/JournalDrawer';
+import TimelineDrawer from '@/components/ZenJoystick/TimelineDrawer';
+import TimelineButton from '@/components/ZenJoystick/TimelineButton';
 import GlowAudio from '@/components/GlowAudio';
 
 export default function Zenboard({ uid }) {
@@ -36,7 +35,6 @@ export default function Zenboard({ uid }) {
       <CelestialBackground />
 
       <div className="absolute inset-0 flex items-center justify-center z-10">
-        <Ikigai />
         <PlanetMessenger />
       </div>
 
