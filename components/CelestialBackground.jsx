@@ -23,7 +23,13 @@ export default function CelestialBackground() {
       positions.push((Math.random() - 0.5) * 200);
     }
     starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    const starsMaterial = new THREE.PointsMaterial({ size: 0.5, color: 0xffffff });
+    const starMaterial = new THREE.PointsMaterial({
+  size: 0.4,
+  color: 0xffffff,
+  sizeAttenuation: true,
+  transparent: true,
+  opacity: 0.8
+});
     const stars = new THREE.Points(starsGeometry, starsMaterial);
     scene.add(stars);
 
