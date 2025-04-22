@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -6,52 +7,61 @@ export default function CelestialBackground() {
 
   useEffect(() => {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.z = 6;
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.z = 10;
 
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     mountRef.current.appendChild(renderer.domElement);
 
-    // ✨ Stars
-    const starsGeometry = new THREE.BufferGeometry();
-    const starsCount = 100000;
-    const positions = [];
-    for (let i = 0; i < starsCount; i++) {
-      positions.push((Math.random() - 0.5) * 200);
-      positions.push((Math.random() - 0.5) * 200);
-      positions.push((Math.random() - 0.5) * 200);
+    // 🌟 Load circular star texture
+    const starTexture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/sprites/circle.png');
+
+    // ✨ Create twinkling stars
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 8000;
+    const starPositions = [];
+    for (let i = 0; i < starCount; i++) {
+      starPositions.push((Math.random() - 0.5) * 400);
+      starPositions.push((Math.random() - 0.5) * 400);
+      starPositions.push((Math.random() - 0.5) * 400);
     }
-    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
     const starMaterial = new THREE.PointsMaterial({
-  size: 0.4,
-  color: 0xffffff,
-  sizeAttenuation: true,
-  transparent: true,
-  opacity: 0.8
-});
-    const stars = new THREE.Points(starsGeometry, starsMaterial);
+      size: 2.5,
+      map: starTexture,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: true
+    });
+    const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // 🌍 Planets
-    const planetUrls = [
+    // 🪐 Planet textures
+    const planetTextures = [
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/mercury.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/venus.jpg",
       "https://raw.githubusercontent.com/itsron717/planet-textures/main/earth.jpg",
       "https://raw.githubusercontent.com/itsron717/planet-textures/main/mars.jpg",
       "https://raw.githubusercontent.com/itsron717/planet-textures/main/jupiter.jpg",
-      "https://raw.githubusercontent.com/itsron717/planet-textures/main/saturn.jpg"
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/saturn.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/uranus.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/neptune.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/pluto.jpg"
     ];
 
     const planets = [];
     const loader = new THREE.TextureLoader();
 
     Promise.all(
-      planetUrls.map((url, i) =>
-        new Promise((resolve) => {
+      planetTextures.map(url =>
+        new Promise(resolve => {
           loader.load(
             url,
-            (texture) => {
-              const geometry = new THREE.SphereGeometry(0.6, 32, 32);
-              const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 });
+            texture => {
+              const geometry = new THREE.SphereGeometry(0.6, 64, 64);
+              const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
               const mesh = new THREE.Mesh(geometry, material);
               mesh.scale.set(0.01, 0.01, 0.01);
               mesh.visible = false;
@@ -61,10 +71,9 @@ export default function CelestialBackground() {
             },
             undefined,
             () => {
-              // fallback color if texture fails
-              const geometry = new THREE.SphereGeometry(0.6, 32, 32);
-              const material = new THREE.MeshBasicMaterial({ color: 0x9999ff });
-              const mesh = new THREE.Mesh(geometry, material);
+              const geometry = new THREE.SphereGeometry(0.6, 64, 64);
+              const fallback = new THREE.MeshBasicMaterial({ color: 0x4444ff });
+              const mesh = new THREE.Mesh(geometry, fallback);
               mesh.scale.set(0.01, 0.01, 0.01);
               mesh.visible = false;
               scene.add(mesh);
@@ -82,25 +91,26 @@ export default function CelestialBackground() {
       const animate = () => {
         requestAnimationFrame(animate);
 
-        stars.rotation.y += 0.0005;
+        stars.rotation.y += 0.0004;
+        stars.rotation.x += 0.0002;
 
         const planet = planets[current];
         if (!planet.visible) planet.visible = true;
 
         if (phase === "fadeIn") {
           planet.scale.multiplyScalar(1.05);
-          planet.material.opacity += 0.02;
+          planet.material.opacity = Math.min(1, (planet.material.opacity || 0) + 0.02);
           if (planet.material.opacity >= 1) {
             phase = "hold";
             counter = 0;
           }
         } else if (phase === "hold") {
           counter++;
-          if (counter > 60) {
+          if (counter > 100) {
             phase = "fadeOut";
           }
         } else if (phase === "fadeOut") {
-          planet.scale.multiplyScalar(0.95);
+          planet.scale.multiplyScalar(0.96);
           planet.material.opacity -= 0.02;
           if (planet.material.opacity <= 0.05) {
             planet.visible = false;
