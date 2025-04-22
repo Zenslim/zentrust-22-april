@@ -6,9 +6,9 @@ import Ikigai from '@/components/ikigai';
 import CosmicWhisper from '@/components/CosmicWhisper';
 import MoonSync from '@/components/MoonSync';
 import JournalPrompt from '@/components/JournalPrompt';
-import JournalDrawer from '@/components/ZenJoystick/JournalDrawer';
-import TimelineDrawer from '@/components/ZenJoystick/TimelineDrawer';
-import TimelineButton from '@/components/ZenJoystick/TimelineButton';
+import JournalDrawer from '@/components/JournalDrawer';
+import TimelineDrawer from '@/components/TimelineDrawer';
+import TimelineButton from '@/components/TimelineButton';
 import GlowAudio from '@/components/GlowAudio';
 
 export default function Zenboard({ uid }) {

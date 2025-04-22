@@ -34,10 +34,10 @@ export default function PlanetMessenger() {
          onClick={handleClick}>
       <div className={\`
         transition-all duration-500 ease-in-out
-        \${visible ? 'opacity-100 scale-125' : 'opacity-0 scale-75'}
+        \" + (visible ? "opacity-100 scale-125" : "opacity-0 scale-75") + "
         w-40 h-40 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600
         flex items-center justify-center text-center text-white text-lg font-semibold shadow-lg
-      \`}>
+      \"}>
         {phrases[current]}
       </div>
     </div>
