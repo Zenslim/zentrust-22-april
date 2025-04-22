@@ -6,56 +6,66 @@ export default function CelestialBackground() {
 
   useEffect(() => {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 8;
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 10;
 
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     mountRef.current.appendChild(renderer.domElement);
 
-    // ★ Stars
+    // ★ Twinkling Starfield
     const starGeometry = new THREE.BufferGeometry();
-    const starVertices = [];
-    for (let i = 0; i < 100000; i++) {
-      starVertices.push((Math.random() - 0.5) * 2000);
-      starVertices.push((Math.random() - 0.5) * 2000);
-      starVertices.push((Math.random() - 0.5) * 2000);
+    const starCount = 100000;
+    const starVertices = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount * 3; i++) {
+      starVertices[i] = (Math.random() - 0.5) * 3000;
     }
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starVertices, 3));
     const starMaterial = new THREE.PointsMaterial({
       size: 1,
-      color: 0xffffff,
-      transparent: true
+      color: 0xffffff
     });
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
-    // 🪐 Realistic Planet Sequence
-    const planetsData = [
-      { name: "Earth", url: "https://raw.githubusercontent.com/itsron717/planet-textures/main/earth.jpg" },
-      { name: "Jupiter", url: "https://raw.githubusercontent.com/itsron717/planet-textures/main/jupiter.jpg" },
-      { name: "Saturn", url: "https://raw.githubusercontent.com/itsron717/planet-textures/main/saturn.jpg" },
-      { name: "Pluto", url: "https://raw.githubusercontent.com/itsron717/planet-textures/main/pluto.jpg" }
+    // 🪐 Realistic Planetary Sequence
+    const planetURLs = [
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/mercury.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/venus.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/earth.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/mars.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/jupiter.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/saturn.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/uranus.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/neptune.jpg",
+      "https://raw.githubusercontent.com/itsron717/planet-textures/main/pluto.jpg"
     ];
 
     const planets = [];
-    const loaders = planetsData.map((planet, index) => {
-      return new Promise(resolve => {
-        new THREE.TextureLoader().load(planet.url, texture => {
-          const geometry = new THREE.SphereGeometry(0.8, 32, 32);
-          const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 });
-          const mesh = new THREE.Mesh(geometry, material);
-          mesh.position.set(0, 0, 0);
-          mesh.scale.set(0.01, 0.01, 0.01);
-          mesh.visible = false;
-          scene.add(mesh);
-          planets.push(mesh);
-          resolve();
-        });
-      });
-    });
+    const loader = new THREE.TextureLoader();
 
-    Promise.all(loaders).then(() => {
+    Promise.all(
+      planetURLs.map(url =>
+        new Promise(resolve => {
+          loader.load(url, texture => {
+            const geometry = new THREE.SphereGeometry(0.6, 32, 32);
+            const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+            const planet = new THREE.Mesh(geometry, material);
+            planet.material.opacity = 0;
+            planet.scale.set(0.01, 0.01, 0.01);
+            planet.visible = false;
+            scene.add(planet);
+            planets.push(planet);
+            resolve();
+          });
+        })
+      )
+    ).then(() => {
       let current = 0;
       let phase = "fadeIn";
       let clock = 0;
@@ -63,13 +73,14 @@ export default function CelestialBackground() {
       const animate = () => {
         requestAnimationFrame(animate);
 
-        stars.rotation.y += 0.0007;
+        // Starfield twinkle
+        stars.rotation.y += 0.0005;
 
         const planet = planets[current];
         if (!planet.visible) planet.visible = true;
 
         if (phase === "fadeIn") {
-          planet.scale.multiplyScalar(1.05);
+          planet.scale.multiplyScalar(1.06);
           planet.material.opacity += 0.02;
           if (planet.material.opacity >= 1) {
             planet.material.opacity = 1;
@@ -104,11 +115,11 @@ export default function CelestialBackground() {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       mountRef.current.removeChild(renderer.domElement);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
