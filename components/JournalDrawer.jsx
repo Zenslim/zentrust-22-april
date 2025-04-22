@@ -2,7 +2,7 @@ import GlowSummaryBox from '@/components/GlowSummaryBox';
 import TypingAura from '@/components/TypingAura';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useState, useEffect } from 'react';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import {
   collection,
   addDoc,
