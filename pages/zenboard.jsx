@@ -36,7 +36,8 @@ export default function Zenboard({ uid }) {
       <CelestialBackground />
 
       <div className="absolute inset-0 flex items-center justify-center z-10">
-        <PlanetMessenger />
+       <IkigaiPlanet onClick={() => window.open('/ikigai-theme', '_blank')} />
+ <PlanetMessenger />
       </div>
 
       <div className="absolute bottom-56 sm:bottom-48 w-full flex justify-center px-4 z-40 animate-float">
