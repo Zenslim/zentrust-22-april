@@ -14,7 +14,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 2s ease, opacity 2s ease;
+  transition: transform 1.8s ease, opacity 1.8s ease;
+}
+
+.start {
+  transform: scale(0.1);
+  opacity: 0;
+}
+
+.zoomIn {
+  transform: scale(1);
+  opacity: 1;
 }
 
 .planetImage {
@@ -22,6 +32,7 @@
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
+  animation: spin 60s linear infinite;
   box-shadow: 0 0 50px rgba(0, 80, 200, 0.5);
 }
 
@@ -33,14 +44,15 @@
   pointer-events: none;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
   padding: 0 10px;
+  white-space: pre-wrap;
 }
 
-.fadeIn {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.fadeOut {
-  transform: scale(0.1);
-  opacity: 0;
+/* Rotation animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
