@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef, useEffect } from 'react'
 
 export default function CelestialBackground() {
   const videoRef = useRef(null)
@@ -8,14 +8,17 @@ export default function CelestialBackground() {
   useEffect(() => {
     const video = videoRef.current
     if (video) {
-      video.play().catch((e) => {
-        console.error('Video failed to autoplay:', e)
-      })
+      const playPromise = video.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.warn('Autoplay prevented:', error)
+        })
+      }
     }
   }, [])
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full -z-50 overflow-hidden bg-black">
+    <div className="absolute top-0 left-0 w-full h-full overflow-hidden bg-black z-0">
       <video
         ref={videoRef}
         src="/space.mp4"
@@ -23,7 +26,7 @@ export default function CelestialBackground() {
         loop
         muted
         playsInline
-        className="absolute w-full h-full object-cover pointer-events-none opacity-80"
+        className="w-full h-full object-cover opacity-60"
       />
     </div>
   )
