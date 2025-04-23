@@ -1,0 +1,27 @@
+.container {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  cursor: pointer;
+}
+
+.planet {
+  font-size: 1.5rem;
+  color: white;
+  text-align: center;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  transform: scale(1);
+  opacity: 1;
+}
+
+.show {
+  transform: scale(1.5);
+  opacity: 1;
+}
+
+.hide {
+  transform: scale(0.5);
+  opacity: 0;
+}
