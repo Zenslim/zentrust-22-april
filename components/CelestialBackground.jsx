@@ -3,56 +3,38 @@
 import { useRef, useEffect, useState } from 'react'
 
 export default function CelestialBackground() {
-  const primaryRef = useRef(null)
-  const secondaryRef = useRef(null)
-  const [useSecondary, setUseSecondary] = useState(false)
+  const videoRef = useRef(null)
+  const [fade, setFade] = useState(false)
 
   useEffect(() => {
-    const video = primaryRef.current
+    const video = videoRef.current
     if (!video) return
 
-    const duration = video.duration || 1
-    let fadeStarted = false
-
-    const loopWatcher = setInterval(() => {
-      if (video.currentTime > duration - 2 && !fadeStarted) {
-        fadeStarted = true
-        const next = secondaryRef.current
-        next.currentTime = 0
-        next.play()
-        setUseSecondary(true)
-        setTimeout(() => {
-          fadeStarted = false
-          const swap = primaryRef.current
-          primaryRef.current = secondaryRef.current
-          secondaryRef.current = swap
-          setUseSecondary(false)
-        }, 1000)
+    const checkTime = () => {
+      if (video.currentTime > video.duration - 0.8) {
+        setFade(true)
+      } else if (video.currentTime < 0.2) {
+        setFade(false)
       }
-    }, 500)
+    }
 
+    video.addEventListener('timeupdate', checkTime)
     video.play().catch(() => {})
-    return () => clearInterval(loopWatcher)
+
+    return () => video.removeEventListener('timeupdate', checkTime)
   }, [])
 
   return (
     <div className="absolute top-0 left-0 w-full h-full overflow-hidden bg-black z-0">
       <video
-        ref={primaryRef}
+        ref={videoRef}
         src="/space.mp4"
         autoPlay
         loop
         muted
         playsInline
-        className="w-full h-full object-cover opacity-100 transition-opacity duration-1000"
-      />
-      <video
-        ref={secondaryRef}
-        src="/space.mp4"
-        muted
-        playsInline
-        className={`w-full h-full object-cover absolute top-0 left-0 transition-opacity duration-1000 ${
-          useSecondary ? 'opacity-60' : 'opacity-0'
+        className={`w-full h-full object-cover transition-opacity duration-1000 ${
+          fade ? 'opacity-80' : 'opacity-100'
         }`}
       />
     </div>
