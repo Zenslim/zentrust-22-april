@@ -18,16 +18,16 @@ export default function IkigaiPlanet({ onClick }) {
       setTimeout(() => {
         setIndex((prev) => (prev + 1) % phrases.length);
         setShow(true);
-      }, 500); // fade out duration
-    }, 3500); // 3s show + 0.5s fade
-
+      }, 500);
+    }, 3500);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className={styles.container} onClick={onClick}>
       <div className={`${styles.planet} ${show ? styles.show : styles.hide}`}>
-        {phrases[index]}
+        <div className={styles.glow}></div>
+        <div className={styles.message}>{phrases[index]}</div>
       </div>
     </div>
   );
