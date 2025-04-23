@@ -10,27 +10,25 @@ const phrases = [
 
 export default function IkigaiPlanet({ onClick }) {
   const [index, setIndex] = useState(0);
-  const [show, setShow] = useState(true);
+  const [active, setActive] = useState(true);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setShow(false);
+      setActive(false);
       setTimeout(() => {
-        setIndex((prev) => (prev + 1) % phrases.length);
-        setShow(true);
-      }, 500);
-    }, 4000);
+        setIndex((i) => (i + 1) % phrases.length);
+        setActive(true);
+      }, 600); // match fade duration
+    }, 4000); // 3.4s visible + 0.6s transition
+
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className={styles.container} onClick={onClick}>
-      <div className={`${styles.planetWrapper} ${show ? styles.show : styles.hide}`}>
-        <div className={styles.planetCore}></div>
-        <div className={styles.orbitingStars}></div>
-        <div className={styles.planetText}>
-          <span>{phrases[index]}</span>
-        </div>
+      <div className={`${styles.planetWrapper} ${active ? styles.fadeIn : styles.fadeOut}`}>
+        <img src="/planet-blue-real.png" className={styles.planetImage} alt="planet" />
+        <div className={styles.planetText}>{phrases[index]}</div>
       </div>
     </div>
   );
