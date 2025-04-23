@@ -1,62 +1,116 @@
+'use client'
+import { useRef, useEffect } from 'react'
+import * as THREE from 'three'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { OrbitControls, Stars } from '@react-three/drei'
 
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+const planetTextures = [
+  '/textures/mercury.jpg',
+  '/textures/venus.jpg',
+  '/textures/earth.jpg',
+  '/textures/mars.jpg',
+  '/textures/jupiter.jpg',
+  '/textures/saturn.jpg',
+  '/textures/uranus.jpg',
+  '/textures/neptune.jpg',
+  '/textures/pluto.jpg'
+]
 
-export default function CelestialBackground() {
-  const mountRef = useRef(null);
+function PlanetMessenger() {
+  const meshRef = useRef()
+  const textureRef = useRef(null)
+  const planetIndex = useRef(0)
+  const opacity = useRef(0)
+  const direction = useRef(1)
 
   useEffect(() => {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 5;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    mountRef.current.appendChild(renderer.domElement);
-
-    const starGeometry = new THREE.BufferGeometry();
-    const starVertices = [];
-
-    for (let i = 0; i < 10000; i++) {
-      starVertices.push((Math.random() - 0.5) * 2000);
-      starVertices.push((Math.random() - 0.5) * 2000);
-      starVertices.push((Math.random() - 0.5) * 2000);
+    const loader = new THREE.TextureLoader()
+    const loadTexture = () => {
+      const texture = loader.load(planetTextures[planetIndex.current])
+      textureRef.current = texture
     }
+    loadTexture()
 
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const interval = setInterval(() => {
+      planetIndex.current = (planetIndex.current + 1) % planetTextures.length
+      loadTexture()
+    }, 8000)
 
-    const starTexture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/sprites/disc.png');
-    const starMaterial = new THREE.PointsMaterial({
-      size: 1.5,
-      map: starTexture,
-      transparent: true,
-      alphaTest: 0.5,
-      color: 0xffffff
-    });
+    return () => clearInterval(interval)
+  }, [])
 
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
+  useFrame(() => {
+    if (meshRef.current && textureRef.current) {
+      const mesh = meshRef.current
+      mesh.material.map = textureRef.current
+      mesh.material.needsUpdate = true
 
-    const animate = () => {
-      requestAnimationFrame(animate);
-      stars.rotation.y += 0.0005;
-      renderer.render(scene, camera);
-    };
+      mesh.rotation.y += 0.001
 
-    animate();
+      // Fade in/out logic
+      if (direction.current === 1) {
+        opacity.current += 0.01
+        if (opacity.current >= 1) direction.current = -1
+      } else {
+        opacity.current -= 0.01
+        if (opacity.current <= 0) direction.current = 1
+      }
+      mesh.material.opacity = Math.max(0, Math.min(1, opacity.current))
+    }
+  })
 
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-    window.addEventListener('resize', handleResize);
+  return (
+    <mesh ref={meshRef} position={[0, 0, -5]}>
+      <sphereGeometry args={[1.5, 32, 32]} />
+      <meshStandardMaterial
+        map={textureRef.current}
+        transparent
+        emissive={new THREE.Color(0x222222)}
+        emissiveIntensity={0.4}
+        opacity={opacity.current}
+      />
+    </mesh>
+  )
+}
 
-    return () => {
-      mountRef.current.removeChild(renderer.domElement);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+function TwinklingStars() {
+  const groupRef = useRef()
+  const starCount = 2500
+  const stars = Array.from({ length: starCount }, () => ({
+    position: new THREE.Vector3(
+      (Math.random() - 0.5) * 200,
+      (Math.random() - 0.5) * 200,
+      (Math.random() - 0.5) * 200
+    ),
+    scale: Math.random() * 0.8 + 0.2
+  }))
 
-  return <div ref={mountRef} style={{ position: 'absolute', top: 0, left: 0 }} />;
+  useFrame(() => {
+    groupRef.current.rotation.y += 0.0008
+  })
+
+  return (
+    <group ref={groupRef}>
+      {stars.map((star, i) => (
+        <sprite key={i} position={star.position} scale={[star.scale, star.scale, 1]}>
+          <spriteMaterial attach="material" color="white" />
+        </sprite>
+      ))}
+    </group>
+  )
+}
+
+export default function CelestialBackground() {
+  return (
+    <div className="fixed top-0 left-0 w-full h-full -z-10">
+      <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
+        <ambientLight intensity={0.5} />
+        <pointLight position={[0, 0, 10]} intensity={1.2} />
+        <Stars radius={100} depth={50} count={1000} factor={4} fade />
+        <TwinklingStars />
+        <PlanetMessenger />
+        <OrbitControls enableZoom={false} enablePan={false} />
+      </Canvas>
+    </div>
+  )
 }
