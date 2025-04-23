@@ -9,16 +9,24 @@ const phrases = [
 ];
 
 export default function IkigaiPlanet({ onClick }) {
-  const [index] = useState(Math.floor(Math.random() * phrases.length));
-  const [show, setShow] = useState(false);
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => setShow(true), 100); // slight delay to trigger zoom-in
+    const loop = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % phrases.length);
+        setVisible(true);
+      }, 2000); // fade-out duration
+    }, 7000); // total: 5s visible + 2s fade
+
+    return () => clearInterval(loop);
   }, []);
 
   return (
     <div className={styles.container} onClick={onClick}>
-      <div className={`${styles.planetWrapper} ${show ? styles.zoomIn : styles.start}`}>
+      <div className={`${styles.planetWrapper} ${visible ? styles.zoomIn : styles.zoomOut}`}>
         <div className={styles.spinLayer}>
           <img src="/planet-blue-real.png" className={styles.planetImage} alt="planet" />
         </div>
