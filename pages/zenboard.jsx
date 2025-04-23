@@ -31,7 +31,7 @@ export default function Zenboard({ uid }) {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
+    <div className="relative w-full h-screen overflow-hidden bg-transparent">
       <CelestialBackground />
 
       <div className="absolute inset-0 flex items-center justify-center z-10">
