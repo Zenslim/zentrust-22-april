@@ -1,6 +1,7 @@
 import AmbientAudio from '@/components/AmbientAudio';
 import { useState } from 'react';
 import CelestialBackground from '@/components/CelestialBackground';
+import IkigaiPlanet from '@/components/IkigaiPlanet';
 import PlanetMessenger from '@/components/PlanetMessenger';
 import CosmicWhisper from '@/components/CosmicWhisper';
 import MoonSync from '@/components/MoonSync';
