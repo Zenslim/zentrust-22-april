@@ -174,7 +174,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
 
     {entries.length > 0 && (
   <>
-    <GlowSummaryBox entries={entries} />
+   <GlowSummaryBox entries={entries.slice(1)} />
 
     <div className="mt-6 mb-2 text-center text-xs uppercase tracking-wider text-zinc-500">Past Reflections</div>
 
