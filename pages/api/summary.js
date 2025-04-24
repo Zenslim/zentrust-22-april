@@ -6,12 +6,16 @@ const stopwords = new Set([
 ]);
 
 function extractJson(text) {
+  console.log('[🧠 RAW RESPONSE]', text); // <== Force-log the actual GPT text
+
   try {
-    const match = text.match(/\{[\s\S]*\}/); // Matches first {...} block, even with line breaks
-    if (!match) throw new Error('No JSON block found');
-    return JSON.parse(match[0]);
+    const match = text.match(/\{[\s\S]*?\}/);
+    if (!match) throw new Error('No JSON object found in response');
+    const parsed = JSON.parse(match[0]);
+    console.log('[✅ Parsed JSON]', parsed); // <== Confirm what got parsed
+    return parsed;
   } catch (err) {
-    console.warn('[🧠 JSON Parse Failed]', err.message);
+    console.error('[❌ JSON Parse Failed]', err.message);
     return {
       summary: "🌀 Your AI summary is awakening...",
       toneHint: "",
