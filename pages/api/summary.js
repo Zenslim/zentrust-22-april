@@ -21,19 +21,16 @@ export default async function handler(req, res) {
     .join(' ');
 
   const prompt = `
-You are a poetic therapeutic AI reflecting back user journal entries.
-Create a vivid, emotionally intelligent summary in JSON format only like:
-
+You're a poetic reflection analyst. Return JSON only:
 {
-  "summary": "One-line poetic essence",
-  "toneHint": "Emoji + emotional trend (e.g. 🌧️ Heavy with inner rain)",
-  "timeHint": "Their journaling tendency (e.g. Mostly late at night)",
-  "insight": "Deeper metaphor about their inner patterns",
-  "encouragement": "A poetic closing line of hope"
+  "summary": "One poetic line",
+  "toneHint": "Emoji + emotional mood trend",
+  "timeHint": "Time pattern like 'late night journaling'",
+  "insight": "Deeper metaphor about user's reflection pattern",
+  "encouragement": "Final uplifting line"
 }
 
-Base it only on this text (cleansed, lowercase, stopwords removed):
-
+Entries (cleansed, stopwords removed):
 "${cleanedText}"
 `;
 
@@ -41,13 +38,13 @@ Base it only on this text (cleansed, lowercase, stopwords removed):
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'gpt-4',
         messages: [
-          { role: 'system', content: 'You are a sacred reflection guide.' },
+          { role: 'system', content: 'You are a poetic spiritual guide.' },
           { role: 'user', content: prompt },
         ],
         temperature: 0.9,
@@ -55,19 +52,14 @@ Base it only on this text (cleansed, lowercase, stopwords removed):
     });
 
     const json = await response.json();
-    const raw = json.choices?.[0]?.message?.content || '{}';
+    console.log('[GPT raw content]', json.choices?.[0]?.message?.content); // 🧪 Debug line
 
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch (e) {
-      console.warn('OpenAI returned malformed JSON:', raw);
-      return res.status(502).json({ error: 'OpenAI summary invalid format', raw });
-    }
+    const raw = json.choices?.[0]?.message?.content || '{}';
+    const parsed = JSON.parse(raw); // may throw
 
     return res.status(200).json(parsed);
   } catch (err) {
-    console.error('AI Summary Error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('[GPT ERROR]', err);
+    return res.status(500).json({ error: 'OpenAI summary failed', details: err.message });
   }
 }
