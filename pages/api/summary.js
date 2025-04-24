@@ -1,5 +1,8 @@
 // pages/api/summary.js
 
+import { db } from '../../firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+
 const stopwords = new Set([
   'the', 'and', 'but', 'with', 'you', 'your', 'this', 'that', 'for', 'from',
   'are', 'have', 'has', 'was', 'had', 'not', 'too', 'very', 'all', 'any',
@@ -29,19 +32,25 @@ function extractJson(text) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { entries } = req.body;
-  if (!entries || !Array.isArray(entries)) return res.status(400).json({ error: 'Invalid input' });
+  const { uid } = req.query;
+  if (!uid) return res.status(400).json({ error: 'Missing UID' });
 
-  const cleaned = entries
-    .map(e => e.note.toLowerCase())
-    .join(' ')
-    .split(/\W+/)
-    .filter(word => word.length > 2 && !stopwords.has(word))
-    .join(' ');
+  try {
+    const ref = collection(db, 'users', uid, 'journal');
+    const q = query(ref, orderBy('timestamp', 'desc'));
+    const snapshot = await getDocs(q);
+    const entries = snapshot.docs.map(doc => doc.data()).filter(e => e.note);
 
-  const prompt = `
+    const cleaned = entries
+      .map(e => e.note.toLowerCase())
+      .join(' ')
+      .split(/\W+/)
+      .filter(word => word.length > 2 && !stopwords.has(word))
+      .join(' ');
+
+    const prompt = `
 Return the following JSON inside one single \"\"\"json code block\"\"\".
 
 No other text. Only the code block.
@@ -60,7 +69,6 @@ Use the text below as reflection data:
 "${cleaned}"
 `;
 
-  try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
