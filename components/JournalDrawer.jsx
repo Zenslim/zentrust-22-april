@@ -173,11 +173,6 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
     {entries.length > 0 && (
-  <>
-   <GlowSummaryBox entries={entries.slice(1)} />
-
-    <div className="mt-6 mb-2 text-center text-xs uppercase tracking-wider text-zinc-500">Past Reflections</div>
-
     <div className="space-y-4 border-t border-zinc-700 pt-4">
       {entries.map((entry) => (
         <ReflectionEntry
