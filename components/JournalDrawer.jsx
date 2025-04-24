@@ -18,54 +18,10 @@ import {
 } from 'firebase/firestore';
 import { useUserData } from '@/hooks/useUserData';
 import VoiceMic from '@/components/VoiceMic';
-import { format } from 'date-fns';
 import ReflectionGlow from '@/components/ReflectionGlow';
+import ReflectionEntry from '@/components/ReflectionEntry';
+import { PROMPTS, CTA_LABELS, MIRROR_HINTS } from '@/data/journalConstants';
 
-const PROMPTS = [
-  "🌿 What’s alive in you right now?",
-  "🧘 What truth are you avoiding?",
-  "🔥 What’s burning inside today?",
-  "🌊 What are you ready to release?",
-  "✨ What made you feel alive lately?",
-  "🌙 What are you holding in silence?",
-  "💡 What insight is asking to be heard?",
-  "🕊️ What does peace look like for you?",
-  "🌱 What is quietly growing within you?",
-  "🎭 What mask are you tired of wearing?",
-  "🌀 What’s spiraling in your mind today?",
-  "💭 What’s the thought you keep revisiting?",
-  "📿 What are you being called to remember?",
-  "🌤️ What would lighten your load right now?",
-  "📌 What truth are you circling around?",
-  "👁️ What do you see that others don’t?",
-  "🫧 What are you feeling but not saying?",
-  "🚪 What chapter wants to close today?",
-  "⛩️ What’s sacred for you right now?",
-  "🫀 Where does your heart want to go?",
-  "🛸 What feels out of place today?",
-  "🗺️ What direction feels right, even if unclear?",
-  "🧬 What story are you rewriting now?",
-  "📖 What wants to be expressed today?",
-];
-
-const CTA_LABELS = [
-  "🛸 Send to Your Future Self",
-  "🌌 Whisper to the Stars",
-  "🌿 Save & Feel Lighter",
-  "🎒 Carry This Forward",
-  "🪞 Reflect & Remember",
-  "🌱 Grow Into Your Purpose",
-  "💡 Reveal What Keeps You Going",
-  "✨ Awaken Your Why",
-];
-
-const MIRROR_HINTS = [
-  "🪞 Speak or type 3 reflections to meet the deeper you.",
-  "🗣️ Use voice or hand — your mirror responds at 3.",
-  "✨ 3 reflections unlock your inner mirror.",
-  "📖 Write or speak 3 times — your mirror awakens.",
-  "🔮 After 3 entries, your reflection begins to glow.",
-]; 
 export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const user = useUserData();
   const [note, setNote] = useState('');
@@ -77,20 +33,18 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [mirrorHint, setMirrorHint] = useState(MIRROR_HINTS[0]);
   const [entries, setEntries] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editNote, setEditNote] = useState("");
+  const [editNote, setEditNote] = useState('');
   const [lastDeleted, setLastDeleted] = useState(null);
 
   useEffect(() => {
     if (open) {
-      const random = Math.floor(Math.random() * PROMPTS.length);
-      setPrompt(PROMPTS[random]);
+      setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
       fetchEntries();
     }
   }, [open]);
 
   useEffect(() => {
-    const moodTrigger = note.trim().length > 5;
-    if (moodTrigger && !showMood) setShowMood(true);
+    if (note.trim().length > 5 && !showMood) setShowMood(true);
   }, [note]);
 
   useEffect(() => {
@@ -142,7 +96,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     const ref = doc(db, 'users', user.uid, 'journal', id);
     await updateDoc(ref, { note: editNote });
     setEditingId(null);
-    setEditNote("");
+    setEditNote('');
     await fetchEntries();
   };
 
@@ -216,37 +170,19 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
 
       {entries.length > 0 && (
         <div className="mt-4 space-y-4 overflow-y-auto max-h-[30vh] border-t border-zinc-700 pt-4">
-          {entries.map((entry) => {
-            const date = entry.timestamp?.toDate?.();
-            const formattedDate = date ? format(date, 'MMM d, yyyy • h:mm a') : '⏳ Timeless';
-            return (
-              <div key={entry.id} className="bg-zinc-800 p-3 rounded-lg shadow">
-                <div className="text-sm text-gray-400 mb-1">🗓 {formattedDate}</div>
-                {editingId === entry.id ? (
-                  <>
-                    <TextareaAutosize
-                      minRows={2}
-                      className="w-full p-2 rounded bg-white text-black resize-none"
-                      value={editNote}
-                      onChange={(e) => setEditNote(e.target.value)}
-                    />
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={() => handleEditSave(entry.id)} className="bg-green-600 px-2 py-1 rounded text-white">Save</button>
-                      <button onClick={() => setEditingId(null)} className="bg-gray-600 px-2 py-1 rounded text-white">Cancel</button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="whitespace-pre-line text-blue-100 text-base">{entry.note}</div>
-                    <div className="flex gap-2 mt-2 text-sm">
-                      <button onClick={() => { setEditingId(entry.id); setEditNote(entry.note); }} className="text-blue-400">Edit</button>
-                      <button onClick={() => handleDelete(entry.id)} className="text-red-400">Delete</button>
-                    </div>
-                  </>
-                )}
-              </div>
-            );
-          })}
+          {entries.map((entry) => (
+            <ReflectionEntry
+              key={entry.id}
+              entry={entry}
+              editingId={editingId}
+              editNote={editNote}
+              setEditNote={setEditNote}
+              setEditingId={setEditingId}
+              handleEditSave={handleEditSave}
+              handleDelete={handleDelete}
+            />
+          ))}
+
           <GlowSummaryBox entries={entries} />
         </div>
       )}
