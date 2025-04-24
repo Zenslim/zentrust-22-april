@@ -5,15 +5,21 @@ const stopwords = new Set([
   'then', 'still', 'yet', 'into', 'out', 'about', 'because', 'also', 'really'
 ]);
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+function extractJson(text) {
+  try {
+    const match = text.match(/{[^]+}/);
+    return match ? JSON.parse(match[0]) : null;
+  } catch (e) {
+    console.warn('Failed to parse JSON:', e.message);
+    return null;
   }
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { entries } = req.body;
-  if (!entries || !Array.isArray(entries)) {
-    return res.status(400).json({ error: 'Invalid input' });
-  }
+  if (!entries || !Array.isArray(entries)) return res.status(400).json({ error: 'Invalid input' });
 
   const cleaned = entries
     .map(e => e.note.toLowerCase())
@@ -23,57 +29,55 @@ export default async function handler(req, res) {
     .join(' ');
 
   const prompt = `
-You're a poetic BPSS insight engine. Give JSON only, no explanation, no preamble. Format:
-
+Please return the following fields in raw JSON only:
 {
-  "summary": "...",
-  "toneHint": "...",
-  "timeHint": "...",
-  "insight": "...",
-  "encouragement": "..."
+  "summary": "A poetic one-line essence",
+  "toneHint": "Emoji + emotional mood",
+  "timeHint": "When this person reflects most",
+  "insight": "Deeper observation of the reflection pattern",
+  "encouragement": "Closing affirmation"
 }
 
-Analyze:
+Use only JSON. No commentary.
+
+Reflections:
 "${cleaned}"
 `;
 
   try {
-    const raw = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4-turbo',
         messages: [
-          { role: 'system', content: 'You are a reflective mood analyst.' },
+          { role: 'system', content: 'You are a poetic BPSS analyst.' },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.8
+        temperature: 0.85
       })
     });
 
-    const data = await raw.json();
-    const message = data?.choices?.[0]?.message?.content?.trim() || '';
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    const parsed = extractJson(content);
 
-    let parsed;
-    try {
-      parsed = JSON.parse(message);
-    } catch (e) {
-      console.warn('[Fallback triggered]', message);
-      parsed = {
+    if (!parsed) {
+      return res.status(200).json({
         summary: "🌀 Your AI summary is awakening...",
         toneHint: "",
         timeHint: "",
         insight: "",
         encouragement: ""
-      };
+      });
     }
 
     return res.status(200).json(parsed);
   } catch (err) {
-    console.error('[GPT Failure]', err);
-    return res.status(500).json({ error: 'OpenAI call failed', details: err.message });
+    console.error('[AI Error]', err);
+    return res.status(500).json({ error: 'OpenAI error', details: err.message });
   }
 }
