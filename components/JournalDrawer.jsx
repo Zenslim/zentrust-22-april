@@ -84,6 +84,10 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       setShowMood(false);
       await fetchEntries();
       if (onNewEntry) onNewEntry(entries.length + 1);
+      setTimeout(() => {
+        const el = document.querySelector('.journal-scroll');
+        if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      }, 500);
     } catch (e) {
       console.error('Error saving journal:', e);
     } finally {
@@ -117,7 +121,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   };
 
   return (
-    <div className={`fixed top-0 right-0 w-full md:w-[420px] h-full bg-zinc-900 text-white p-6 z-40 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+    <div className={`journal-scroll fixed top-0 right-0 w-full md:w-[420px] h-full bg-zinc-900 text-white z-40 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto scroll-smooth p-6`}>
       <h2 className="text-2xl font-semibold mb-4">{prompt}</h2>
 
       <TypingAura>
@@ -170,7 +174,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
 
       {entries.length > 0 && (
         <>
-          <div className="mt-4 space-y-4 overflow-y-auto max-h-[30vh] border-t border-zinc-700 pt-4">
+          <div className="mt-4 space-y-4 border-t border-zinc-700 pt-4">
             {entries.map((entry) => (
               <ReflectionEntry
                 key={entry.id}
@@ -184,7 +188,6 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
               />
             ))}
           </div>
-
           <GlowSummaryBox entries={entries} />
         </>
       )}
