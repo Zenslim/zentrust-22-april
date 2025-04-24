@@ -173,6 +173,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
     {entries.length > 0 && (
+  <>
     <div className="space-y-4 border-t border-zinc-700 pt-4">
       {entries.map((entry) => (
         <ReflectionEntry
@@ -189,11 +190,12 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     </div>
   </>
 )}
-       {lastDeleted && (
-        <div className="text-center mt-4">
-          <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
-        </div>
-      )}
+
+{lastDeleted && (
+  <div className="text-center mt-4">
+    <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
+  </div>
+)}
     </div>
   );
 }
