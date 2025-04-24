@@ -64,9 +64,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   }, []);
 
   useEffect(() => {
-    if (reflectionCount >= 3) {
-      setShowMirror(true);
-    }
+    if (reflectionCount >= 3) setShowMirror(true);
   }, [reflectionCount]);
 
   const fetchEntries = async () => {
@@ -88,13 +86,18 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         mood: mood || '🤔 undefined',
         timestamp: serverTimestamp(),
       });
-      setLastReflection(note); // trigger summary
-      setReflectionCount(prev => prev + 1); // update count
+
+      console.log('[JournalDrawer] Reflection submitted:', note);
+      setLastReflection(note); // triggers GlowSummaryBox
+      setReflectionCount(prev => prev + 1);
+
       setNote('');
       setMood(null);
       setShowMood(false);
+
       await fetchEntries();
       if (onNewEntry) onNewEntry(entries.length + 1);
+
       setTimeout(() => {
         const el = document.querySelector('.journal-scroll');
         if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
@@ -180,9 +183,12 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
       {lastReflection && (
-        <div className="mt-6">
-          <GlowSummaryBox reflectionText={lastReflection} />
-        </div>
+        <>
+          {console.log('[JournalDrawer] Rendering GlowSummaryBox with:', lastReflection)}
+          <div className="mt-6">
+            <GlowSummaryBox reflectionText={lastReflection} />
+          </div>
+        </>
       )}
 
       {showMirror && (
