@@ -7,11 +7,18 @@ const stopwords = new Set([
 
 function extractJson(text) {
   try {
-    const match = text.match(/{[^]+}/);
-    return match ? JSON.parse(match[0]) : null;
-  } catch (e) {
-    console.warn('Failed to parse JSON:', e.message);
-    return null;
+    const match = text.match(/\{[\s\S]*\}/); // Matches first {...} block, even with line breaks
+    if (!match) throw new Error('No JSON block found');
+    return JSON.parse(match[0]);
+  } catch (err) {
+    console.warn('[🧠 JSON Parse Failed]', err.message);
+    return {
+      summary: "🌀 Your AI summary is awakening...",
+      toneHint: "",
+      timeHint: "",
+      insight: "",
+      encouragement: ""
+    };
   }
 }
 
