@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     .join(' ');
 
   const prompt = `
-Please return the following fields in raw JSON only:
+Return only the following JSON object. Do not include any text before or after:
 {
   "summary": "A poetic one-line essence",
   "toneHint": "Emoji + emotional mood",
