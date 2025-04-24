@@ -172,27 +172,29 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         <ReflectionGlow entries={entries} />
       </div>
 
-      {entries.length > 0 && (
-        <>
-          <div className="mt-4 space-y-4 border-t border-zinc-700 pt-4">
-            {entries.map((entry) => (
-              <ReflectionEntry
-                key={entry.id}
-                entry={entry}
-                editingId={editingId}
-                editNote={editNote}
-                setEditNote={setEditNote}
-                setEditingId={setEditingId}
-                handleEditSave={handleEditSave}
-                handleDelete={handleDelete}
-              />
-            ))}
-          </div>
-          <GlowSummaryBox entries={entries} />
-        </>
-      )}
+    {entries.length > 0 && (
+  <>
+    <GlowSummaryBox entries={entries} />
 
-      {lastDeleted && (
+    <div className="mt-6 mb-2 text-center text-xs uppercase tracking-wider text-zinc-500">Past Reflections</div>
+
+    <div className="space-y-4 border-t border-zinc-700 pt-4">
+      {entries.map((entry) => (
+        <ReflectionEntry
+          key={entry.id}
+          entry={entry}
+          editingId={editingId}
+          editNote={editNote}
+          setEditNote={setEditNote}
+          setEditingId={setEditingId}
+          handleEditSave={handleEditSave}
+          handleDelete={handleDelete}
+        />
+      ))}
+    </div>
+  </>
+)}
+       {lastDeleted && (
         <div className="text-center mt-4">
           <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
         </div>
