@@ -1,0 +1,26 @@
+.glowBox {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  margin-top: 1rem;
+}
+
+.title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #a5f3fc;
+}
+
+.loading {
+  color: #fef08a;
+  font-style: italic;
+}
+
+.summary {
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
