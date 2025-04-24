@@ -76,7 +76,7 @@ Use the text below as reflection data:
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4-turbo',
+        model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: 'You are a poetic BPSS analyst.' },
           { role: 'user', content: prompt }
