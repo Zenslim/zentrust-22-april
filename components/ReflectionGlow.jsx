@@ -1,14 +1,11 @@
-// components/ReflectionGlow.jsx
 import { useEffect, useState } from 'react';
 
 export default function ReflectionGlow({ entries }) {
   const [insight, setInsight] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchSummary = async () => {
-      if (entries.length < 3) return;
-      setLoading(true);
       try {
         const res = await fetch('/api/summary', {
           method: 'POST',
@@ -16,34 +13,34 @@ export default function ReflectionGlow({ entries }) {
           body: JSON.stringify({ entries }),
         });
         const data = await res.json();
-        if (res.ok) setInsight(data);
-        else console.error('Summary error:', data.error || data);
-      } catch (e) {
-        console.error('AI fetch failed:', e);
-      } finally {
-        setLoading(false);
+        if (data && data.summary) {
+          setInsight(data);
+        } else {
+          console.warn('No summary returned from API.');
+          setError(true);
+        }
+      } catch (err) {
+        console.error('Summary API error:', err);
+        setError(true);
       }
     };
 
-    fetchSummary();
+    if (entries.length >= 3) fetchSummary();
   }, [entries]);
 
-  if (!insight && !loading) return null;
+  if (!insight || error) return (
+    <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-indigo-800 to-purple-900 text-white shadow-xl animate-fade-in">
+      <h3 className="text-xl font-semibold mb-2">🔮 Your Reflection Begins to Glow</h3>
+      <p className="text-sm text-blue-300 italic">
+        Your AI summary is awakening... Keep journaling.
+      </p>
+    </div>
+  );
 
   return (
     <div className="mt-8 p-4 rounded-xl bg-gradient-to-br from-indigo-800 to-purple-900 text-white shadow-xl animate-fade-in">
       <h3 className="text-xl font-semibold mb-2">🔮 Your Reflection Begins to Glow</h3>
-      {loading ? (
-        <p className="text-sm italic text-blue-200">Analyzing your reflections...</p>
-      ) : (
-        <>
-          <p className="text-sm text-blue-100 mb-1">{insight.summary}</p>
-          {insight.timeHint && <p className="text-sm text-blue-200 mb-1">{insight.timeHint}</p>}
-          <p className="text-sm text-blue-200 mb-1">{insight.toneHint}</p>
-          <p className="text-sm text-emerald-200 mb-1">{insight.insight}</p>
-          <p className="text-sm text-yellow-300 italic">{insight.encouragement}</p>
-        </>
-      )}
+      <p className="text-sm text-blue-100 mb-2 whitespace-pre-line">{insight.summary}</p>
     </div>
   );
 }
