@@ -87,8 +87,7 @@ Use the text below as reflection data:
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
-    const parsed = extractJson(content);
-    return res.status(200).json(parsed);
+    return res.status(200).json({ raw: content });
   } catch (err) {
     console.error('[GPT ERROR]', err);
     return res.status(500).json({ error: 'OpenAI summary failed', details: err.message });
