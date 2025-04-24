@@ -1,5 +1,3 @@
-// pages/api/summary.js
-
 const stopwords = new Set([
   'the', 'and', 'but', 'with', 'you', 'your', 'this', 'that', 'for', 'from',
   'are', 'have', 'has', 'was', 'had', 'not', 'too', 'very', 'all', 'any',
@@ -8,58 +6,74 @@ const stopwords = new Set([
 ]);
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const { entries } = req.body;
-  if (!entries || !Array.isArray(entries)) return res.status(400).json({ error: 'Invalid input' });
+  if (!entries || !Array.isArray(entries)) {
+    return res.status(400).json({ error: 'Invalid input' });
+  }
 
-  const cleanedText = entries
+  const cleaned = entries
     .map(e => e.note.toLowerCase())
     .join(' ')
     .split(/\W+/)
-    .filter(w => w.length > 2 && !stopwords.has(w))
+    .filter(word => word.length > 2 && !stopwords.has(word))
     .join(' ');
 
   const prompt = `
-You're a poetic reflection analyst. Return JSON only:
+You're a poetic BPSS insight engine. Give JSON only, no explanation, no preamble. Format:
+
 {
-  "summary": "One poetic line",
-  "toneHint": "Emoji + emotional mood trend",
-  "timeHint": "Time pattern like 'late night journaling'",
-  "insight": "Deeper metaphor about user's reflection pattern",
-  "encouragement": "Final uplifting line"
+  "summary": "...",
+  "toneHint": "...",
+  "timeHint": "...",
+  "insight": "...",
+  "encouragement": "..."
 }
 
-Entries (cleansed, stopwords removed):
-"${cleanedText}"
+Analyze:
+"${cleaned}"
 `;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const raw = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'gpt-4',
         messages: [
-          { role: 'system', content: 'You are a poetic spiritual guide.' },
-          { role: 'user', content: prompt },
+          { role: 'system', content: 'You are a reflective mood analyst.' },
+          { role: 'user', content: prompt }
         ],
-        temperature: 0.9,
-      }),
+        temperature: 0.8
+      })
     });
 
-    const json = await response.json();
-    console.log('[GPT raw content]', json.choices?.[0]?.message?.content); // 🧪 Debug line
+    const data = await raw.json();
+    const message = data?.choices?.[0]?.message?.content?.trim() || '';
 
-    const raw = json.choices?.[0]?.message?.content || '{}';
-    const parsed = JSON.parse(raw); // may throw
+    let parsed;
+    try {
+      parsed = JSON.parse(message);
+    } catch (e) {
+      console.warn('[Fallback triggered]', message);
+      parsed = {
+        summary: "🌀 Your AI summary is awakening...",
+        toneHint: "",
+        timeHint: "",
+        insight: "",
+        encouragement: ""
+      };
+    }
 
     return res.status(200).json(parsed);
   } catch (err) {
-    console.error('[GPT ERROR]', err);
-    return res.status(500).json({ error: 'OpenAI summary failed', details: err.message });
+    console.error('[GPT Failure]', err);
+    return res.status(500).json({ error: 'OpenAI call failed', details: err.message });
   }
 }
