@@ -1,3 +1,5 @@
+// pages/api/summary.js
+
 const stopwords = new Set([
   'the', 'and', 'but', 'with', 'you', 'your', 'this', 'that', 'for', 'from',
   'are', 'have', 'has', 'was', 'had', 'not', 'too', 'very', 'all', 'any',
@@ -6,13 +8,12 @@ const stopwords = new Set([
 ]);
 
 function extractJson(text) {
-  console.log('[🧠 RAW RESPONSE]', text); // <== Force-log the actual GPT text
-
+  console.log('[🧠 RAW RESPONSE]', text);
   try {
-    const match = text.match(/\{[\s\S]*?\}/);
-    if (!match) throw new Error('No JSON object found in response');
-    const parsed = JSON.parse(match[0]);
-    console.log('[✅ Parsed JSON]', parsed); // <== Confirm what got parsed
+    const match = text.match(/```json\s*({[\s\S]*?})\s*```/i);
+    if (!match) throw new Error('No JSON code block found');
+    const parsed = JSON.parse(match[1]);
+    console.log('[✅ Parsed JSON]', parsed);
     return parsed;
   } catch (err) {
     console.error('[❌ JSON Parse Failed]', err.message);
@@ -21,7 +22,8 @@ function extractJson(text) {
       toneHint: "",
       timeHint: "",
       insight: "",
-      encouragement: ""
+      encouragement: "",
+      raw: text
     };
   }
 }
@@ -40,7 +42,11 @@ export default async function handler(req, res) {
     .join(' ');
 
   const prompt = `
-Return only the following JSON object. Do not include any text before or after:
+Return the following JSON inside one single \"\"\"json code block\"\"\".
+
+No other text. Only the code block.
+
+\"\"\"json
 {
   "summary": "A poetic one-line essence",
   "toneHint": "Emoji + emotional mood",
@@ -48,10 +54,9 @@ Return only the following JSON object. Do not include any text before or after:
   "insight": "Deeper observation of the reflection pattern",
   "encouragement": "Closing affirmation"
 }
+\"\"\"
 
-Use only JSON. No commentary.
-
-Reflections:
+Use the text below as reflection data:
 "${cleaned}"
 `;
 
@@ -74,22 +79,10 @@ Reflections:
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
-    console.log('[🧠 RAW GPT OUTPUT]', content);
     const parsed = extractJson(content);
-
-    if (!parsed) {
-      return res.status(200).json({
-        summary: "🌀 Your AI summary is awakening...",
-        toneHint: "",
-        timeHint: "",
-        insight: "",
-        encouragement: ""
-      });
-    }
-
     return res.status(200).json(parsed);
   } catch (err) {
-    console.error('[AI Error]', err);
-    return res.status(500).json({ error: 'OpenAI error', details: err.message });
+    console.error('[GPT ERROR]', err);
+    return res.status(500).json({ error: 'OpenAI summary failed', details: err.message });
   }
 }
