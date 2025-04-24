@@ -85,7 +85,16 @@ Use the text below as reflection data:
       })
     });
 
-    const data = await response.json();
+   const data = await response.json();
+console.log('[📥 FULL GPT API RESPONSE]', JSON.stringify(data, null, 2));
+
+if (!data.choices || !data.choices[0]) {
+  return res.status(200).json({
+    summary: "❌ GPT returned nothing",
+    error: data.error || 'Empty response',
+    raw: JSON.stringify(data)
+  });
+}
     const content = data.choices?.[0]?.message?.content || '';
     return res.status(200).json({ raw: content });
   } catch (err) {
