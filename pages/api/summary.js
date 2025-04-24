@@ -63,6 +63,7 @@ Reflections:
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
+    console.log('[🧠 RAW GPT OUTPUT]', content);
     const parsed = extractJson(content);
 
     if (!parsed) {
