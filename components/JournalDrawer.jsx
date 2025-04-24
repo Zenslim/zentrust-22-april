@@ -35,6 +35,9 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [editingId, setEditingId] = useState(null);
   const [editNote, setEditNote] = useState('');
   const [lastDeleted, setLastDeleted] = useState(null);
+  const [lastReflection, setLastReflection] = useState('');
+  const [reflectionCount, setReflectionCount] = useState(0);
+  const [showMirror, setShowMirror] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -60,6 +63,12 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (reflectionCount >= 3) {
+      setShowMirror(true);
+    }
+  }, [reflectionCount]);
+
   const fetchEntries = async () => {
     if (!user?.uid) return;
     const ref = collection(db, 'users', user.uid, 'journal');
@@ -79,6 +88,8 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         mood: mood || '🤔 undefined',
         timestamp: serverTimestamp(),
       });
+      setLastReflection(note); // trigger summary
+      setReflectionCount(prev => prev + 1); // update count
       setNote('');
       setMood(null);
       setShowMood(false);
@@ -168,34 +179,44 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         </button>
       </div>
 
+      {lastReflection && (
+        <div className="mt-6">
+          <GlowSummaryBox reflectionText={lastReflection} />
+        </div>
+      )}
+
+      {showMirror && (
+        <div className="mt-6 p-4 border border-purple-500 rounded bg-black text-purple-300 text-center">
+          🪞 You've spoken thrice. Your mirror awakens.
+        </div>
+      )}
+
       <div className="mt-6">
         <ReflectionGlow entries={entries} />
       </div>
 
-    {entries.length > 0 && (
-  <>
-    <div className="space-y-4 border-t border-zinc-700 pt-4">
-      {entries.map((entry) => (
-        <ReflectionEntry
-          key={entry.id}
-          entry={entry}
-          editingId={editingId}
-          editNote={editNote}
-          setEditNote={setEditNote}
-          setEditingId={setEditingId}
-          handleEditSave={handleEditSave}
-          handleDelete={handleDelete}
-        />
-      ))}
-    </div>
-  </>
-)}
+      {entries.length > 0 && (
+        <div className="space-y-4 border-t border-zinc-700 pt-4">
+          {entries.map((entry) => (
+            <ReflectionEntry
+              key={entry.id}
+              entry={entry}
+              editingId={editingId}
+              editNote={editNote}
+              setEditNote={setEditNote}
+              setEditingId={setEditingId}
+              handleEditSave={handleEditSave}
+              handleDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
 
-{lastDeleted && (
-  <div className="text-center mt-4">
-    <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
-  </div>
-)}
+      {lastDeleted && (
+        <div className="text-center mt-4">
+          <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
+        </div>
+      )}
     </div>
   );
 }
