@@ -1,22 +1,36 @@
 // pages/api/summary.js
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const { entries } = req.body;
-  const combined = entries.map((e, i) => `Entry ${i + 1}: ${e.note}`).join('\n');
 
-  const prompt = `
-You are a poetic therapist. Summarize the emotional and thematic journey from these journal entries.
-Mention recurring themes, emotional tone, and give an uplifting insight. Avoid repetition. Be deeply human.
-  
-${combined}
+  if (!entries || !Array.isArray(entries)) {
+    return res.status(400).json({ error: 'Invalid input' });
+  }
 
-Respond with a JSON object like:
+  const messages = [
+    {
+      role: 'system',
+      content: `You're a gentle and poetic reflection guide. Given a user's journal entries, return an inspiring and emotionally intelligent summary in this JSON format:
+
 {
-  "title": "🌙 A Soul in Transition",
-  "body": "You've been reflecting deeply... 🔤 Common themes: love, stillness, clarity"
+  "summary": "...",
+  "toneHint": "...",
+  "timeHint": "...",
+  "insight": "...",
+  "encouragement": "..."
 }
-`;
+
+Use beautiful, surprising, and motivational language. Use emojis sparingly but meaningfully. The summary should feel personalized, not robotic.`,
+    },
+    {
+      role: 'user',
+      content: `Here are my reflections:\n\n${entries.map(e => `• ${e.note}`).join('\n')}`,
+    },
+  ];
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -27,20 +41,25 @@ Respond with a JSON object like:
       },
       body: JSON.stringify({
         model: 'gpt-4',
-        messages: [
-          { role: 'system', content: 'You are a spiritual journaling guide.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.9,
-      })
+        messages,
+        temperature: 0.7,
+      }),
     });
 
     const json = await response.json();
-    const content = json.choices?.[0]?.message?.content || '{}';
-    const parsed = JSON.parse(content);
-    res.status(200).json(parsed);
+
+    const result = json.choices?.[0]?.message?.content;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result);
+    } catch (e) {
+      return res.status(502).json({ error: 'Invalid JSON from OpenAI', raw: result });
+    }
+
+    return res.status(200).json(parsed);
   } catch (err) {
     console.error('AI Summary Error:', err);
-    res.status(500).json({ error: 'Failed to generate summary' });
+    return res.status(500).json({ error: 'Server error' });
   }
 }
