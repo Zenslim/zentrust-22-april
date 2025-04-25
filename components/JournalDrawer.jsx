@@ -38,6 +38,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [lastReflection, setLastReflection] = useState('');
   const [reflectionCount, setReflectionCount] = useState(0);
   const [showAll, setShowAll] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -65,7 +66,8 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
 
   useEffect(() => {
     if (entries.length >= 3) {
-      setReflectionCount(entries.length);
+      setSummaryLoading(true);
+      setLastReflection(entries[0]?.note || '');
     }
   }, [entries]);
 
@@ -88,7 +90,6 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         mood: mood || '🤔 undefined',
         timestamp: serverTimestamp(),
       });
-      setLastReflection(note);
       setNote('');
       setMood(null);
       setShowMood(false);
@@ -166,8 +167,6 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         </>
       )}
 
-      <div className="text-xs text-center text-gray-400 italic mt-2">{mirrorHint}</div>
-
       <div className="mt-4">
         <button
           onClick={handleSubmit}
@@ -178,8 +177,10 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         </button>
       </div>
 
-      {reflectionCount >= 3 && (
-        <GlowSummaryBox reflectionText={lastReflection} reflectionCount={reflectionCount} />
+      {entries.length >= 3 && (
+        <div className="mt-6">
+          <GlowSummaryBox reflectionText={lastReflection} />
+        </div>
       )}
 
       <div className="mt-6">
@@ -187,30 +188,27 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
       {entries.length > 0 && (
-        <div className="mt-6">
+        <div className="pt-4 border-t border-zinc-700">
           <button
-            className="text-sm text-purple-300 hover:text-purple-400 underline"
+            className="text-left w-full text-sm text-indigo-400 hover:text-indigo-200 mt-4 mb-2"
             onClick={() => setShowAll(!showAll)}
           >
-            🪞 Your Echoes ({entries.length})
+            📜 Your Echoes ({entries.length})
           </button>
-        </div>
-      )}
-
-      {showAll && entries.length > 0 && (
-        <div className="space-y-4 border-t border-zinc-700 pt-4">
-          {entries.map((entry) => (
-            <ReflectionEntry
-              key={entry.id}
-              entry={entry}
-              editingId={editingId}
-              editNote={editNote}
-              setEditNote={setEditNote}
-              setEditingId={setEditingId}
-              handleEditSave={handleEditSave}
-              handleDelete={handleDelete}
-            />
-          ))}
+          <div className="space-y-4">
+            {(showAll ? entries : [entries[0]]).map((entry) => (
+              <ReflectionEntry
+                key={entry.id}
+                entry={entry}
+                editingId={editingId}
+                editNote={editNote}
+                setEditNote={setEditNote}
+                setEditingId={setEditingId}
+                handleEditSave={handleEditSave}
+                handleDelete={handleDelete}
+              />
+            ))}
+          </div>
         </div>
       )}
 
