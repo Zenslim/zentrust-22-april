@@ -5,7 +5,7 @@ export async function getReflectionSummary(reflectionText) {
   };
 
   const body = {
-    model: 'google/gemini-pro-1.5',
+    model: 'deepseek-ai/deepseek-v3-0324',
     max_tokens: 500, // ✅ Safe for OpenRouter free tier
     messages: [
       {
