@@ -6,6 +6,7 @@ export async function getReflectionSummary(reflectionText) {
 
   const body = {
     model: 'google/gemini-pro-1.5',
+    max_tokens: 500, // ✅ Safe for OpenRouter free tier
     messages: [
       {
         role: 'system',
