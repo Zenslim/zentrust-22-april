@@ -5,12 +5,12 @@ export async function getReflectionSummary(reflectionText) {
   };
 
   const body = {
-    model: 'deepseek-ai/deepseek-v3', // ✅ This is correct
+    model: 'deepseek-ai/deepseek-v2',  // ✅ Known working free model ID
     max_tokens: 500,
     messages: [
       {
         role: 'system',
-        content: 'You summarize reflections with poetic warmth and clarity.',
+        content: 'You summarize personal reflections with poetic warmth and deep clarity.',
       },
       {
         role: 'user',
