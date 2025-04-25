@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import {
-  collection,
-  addDoc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  updateDoc,
-  deleteDoc,
-  doc,
-  getDoc,
-  setDoc,
+  collection, addDoc, getDocs, orderBy, query, serverTimestamp,
+  updateDoc, deleteDoc, doc, getDoc, setDoc
 } from 'firebase/firestore';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useUserData } from '@/hooks/useUserData';
@@ -19,6 +10,7 @@ import TypingAura from '@/components/TypingAura';
 import VoiceMic from '@/components/VoiceMic';
 import ReflectionEntry from '@/components/ReflectionEntry';
 import MirrorSummaryDrawer from '@/components/MirrorSummaryDrawer';
+import DateRangePicker from '@/components/DateRangePicker';
 import { PROMPTS, CTA_LABELS } from '@/data/journalConstants';
 import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
@@ -38,6 +30,8 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [showMirrorModal, setShowMirrorModal] = useState(false);
   const [summaryMode, setSummaryMode] = useState('last');
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [customRange, setCustomRange] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -82,36 +76,55 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     }
   };
 
-  const handleEditSave = async (id) => {
-    if (!editNote.trim()) return;
-    const ref = doc(db, 'users', user.uid, 'journal', id);
-    await updateDoc(ref, { note: editNote });
-    setEditingId(null);
-    setEditNote('');
-    await fetchEntries();
-  };
-
-  const handleDelete = async (id) => {
-    const ref = doc(db, 'users', user.uid, 'journal', id);
-    const snap = await getDoc(ref);
-    setLastDeleted({ id, data: snap.data() });
-    await deleteDoc(ref);
-    await fetchEntries();
-  };
-
-  const handleUndo = async () => {
-    if (!lastDeleted) return;
-    const { id, data } = lastDeleted;
-    await setDoc(doc(db, 'users', user.uid, 'journal', id), data);
-    setLastDeleted(null);
-    await fetchEntries();
-  };
-
   const handleSummary = async () => {
     if (entries.length === 0) return;
+    if (summaryMode === 'custom' && !customRange) {
+      setShowDatePicker(true);
+      return;
+    }
+
     setIsSummarizing(true);
-    const reflectionText = summaryMode === 'last' ? entries[0]?.note : entries.map(e => e.note).join(' ');
-    const result = await getReflectionSummary(reflectionText);
+    let reflectionText = '';
+    const now = new Date();
+
+    if (summaryMode === 'last') {
+      reflectionText = entries[0]?.note || '';
+    } else if (summaryMode === 'all') {
+      reflectionText = entries.map(e => e.note).join(' ');
+    } else if (summaryMode === 'random3') {
+      const randomEntries = [...entries].sort(() => 0.5 - Math.random()).slice(0, 3);
+      reflectionText = randomEntries.map(e => e.note).join(' ');
+    } else if (summaryMode === 'morning') {
+      reflectionText = entries.filter(e => {
+        const hour = e.timestamp?.toDate?.().getHours?.() || 0;
+        return hour >= 5 && hour < 12;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'evening') {
+      reflectionText = entries.filter(e => {
+        const hour = e.timestamp?.toDate?.().getHours?.() || 0;
+        return hour >= 18 || hour < 5;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'longest') {
+      const longestEntry = entries.reduce((a, b) => (a.note.length > b.note.length ? a : b), entries[0]);
+      reflectionText = longestEntry?.note || '';
+    } else if (summaryMode === 'oneday') {
+      reflectionText = entries.filter(e => {
+        const timestamp = e.timestamp?.toDate?.();
+        return timestamp && (now - timestamp) <= 24 * 60 * 60 * 1000;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'oneweek') {
+      reflectionText = entries.filter(e => {
+        const timestamp = e.timestamp?.toDate?.();
+        return timestamp && (now - timestamp) <= 7 * 24 * 60 * 60 * 1000;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'custom' && customRange) {
+      reflectionText = entries.filter(e => {
+        const timestamp = e.timestamp?.toDate?.();
+        return timestamp && new Date(customRange.start) <= timestamp && timestamp <= new Date(customRange.end);
+      }).map(e => e.note).join(' ');
+    }
+
+    const result = await getReflectionSummary(reflectionText || 'No suitable reflections found.');
     setMirrorSummary(result);
     setIsSummarizing(false);
     setShowMirrorModal(true);
@@ -162,6 +175,13 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
           >
             <option value="last">🪞 Last Reflection Only</option>
             <option value="all">📚 All Reflections</option>
+            <option value="random3">🎲 Random 3 Reflections</option>
+            <option value="morning">🌅 Morning Reflections</option>
+            <option value="evening">🌙 Evening Reflections</option>
+            <option value="longest">🧠 Longest Reflection</option>
+            <option value="oneday">🕰️ Past 24 Hours</option>
+            <option value="oneweek">🗓️ Past 7 Days</option>
+            <option value="custom">📅 Custom Range</option>
           </select>
         </div>
       )}
@@ -203,6 +223,17 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         isOpen={showMirrorModal}
         onClose={() => setShowMirrorModal(false)}
       />
+
+      {showDatePicker && (
+        <DateRangePicker
+          onSelect={(range) => {
+            setCustomRange(range);
+            setShowDatePicker(false);
+            handleSummary();
+          }}
+          onClose={() => setShowDatePicker(false)}
+        />
+      )}
     </div>
   );
 }
