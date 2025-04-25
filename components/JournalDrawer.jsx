@@ -1,7 +1,7 @@
-import GlowSummaryBox from '@/components/GlowSummaryBox';
+import { useEffect, useState } from 'react';
+import { getReflectionSummary } from '@/utils/getReflectionSummary';
 import TypingAura from '@/components/TypingAura';
 import TextareaAutosize from 'react-textarea-autosize';
-import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import {
   collection,
@@ -18,56 +18,34 @@ import {
 } from 'firebase/firestore';
 import { useUserData } from '@/hooks/useUserData';
 import VoiceMic from '@/components/VoiceMic';
-import ReflectionGlow from '@/components/ReflectionGlow';
 import ReflectionEntry from '@/components/ReflectionEntry';
-import { PROMPTS, CTA_LABELS, MIRROR_HINTS } from '@/data/journalConstants';
 
 export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const user = useUserData();
   const [note, setNote] = useState('');
-  const [mood, setMood] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [prompt, setPrompt] = useState(PROMPTS[0]);
-  const [showMood, setShowMood] = useState(false);
-  const [saveLabel, setSaveLabel] = useState(CTA_LABELS[0]);
-  const [mirrorHint, setMirrorHint] = useState(MIRROR_HINTS[0]);
   const [entries, setEntries] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editNote, setEditNote] = useState('');
   const [lastDeleted, setLastDeleted] = useState(null);
-  const [lastReflection, setLastReflection] = useState('');
-  const [reflectionCount, setReflectionCount] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [loadingSummary, setLoadingSummary] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
-      fetchEntries();
-    }
+    if (open) fetchEntries();
   }, [open]);
 
   useEffect(() => {
-    if (note.trim().length > 5 && !showMood) setShowMood(true);
-  }, [note]);
-
-  useEffect(() => {
-    const labelInterval = setInterval(() => {
-      setSaveLabel(CTA_LABELS[Math.floor(Math.random() * CTA_LABELS.length)]);
-    }, 6000);
-    const mirrorInterval = setInterval(() => {
-      setMirrorHint(MIRROR_HINTS[Math.floor(Math.random() * MIRROR_HINTS.length)]);
-    }, 8000);
-    return () => {
-      clearInterval(labelInterval);
-      clearInterval(mirrorInterval);
-    };
-  }, []);
-
-  useEffect(() => {
     if (entries.length >= 3) {
-      setSummaryLoading(true);
-      setLastReflection(entries[0]?.note || '');
+      const latest = entries[0]?.note;
+      if (latest) {
+        setLoadingSummary(true);
+        getReflectionSummary(latest).then(res => {
+          setSummary(res);
+          setLoadingSummary(false);
+        });
+      }
     }
   }, [entries]);
 
@@ -87,18 +65,11 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       const ref = collection(db, 'users', user.uid, 'journal');
       await addDoc(ref, {
         note,
-        mood: mood || '🤔 undefined',
         timestamp: serverTimestamp(),
       });
       setNote('');
-      setMood(null);
-      setShowMood(false);
       await fetchEntries();
       if (onNewEntry) onNewEntry(entries.length + 1);
-      setTimeout(() => {
-        const el = document.querySelector('.journal-scroll');
-        if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-      }, 500);
     } catch (e) {
       console.error('Error saving journal:', e);
     } finally {
@@ -133,7 +104,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
 
   return (
     <div className={`journal-scroll fixed top-0 right-0 w-full md:w-[420px] h-full bg-zinc-900 text-white z-40 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto scroll-smooth p-6`}>
-      <h2 className="text-2xl font-semibold mb-4">{prompt}</h2>
+      <h2 className="text-2xl font-semibold mb-4">🌀 What would lighten your load right now?</h2>
 
       <TypingAura>
         <TextareaAutosize
@@ -150,65 +121,43 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         <VoiceMic onTranscript={(text) => setNote((prev) => prev + ' ' + text)} />
       </div>
 
-      {showMood && (
-        <>
-          <p className="text-sm mt-4 text-gray-400">Would you like to tag a mood?</p>
-          <div className="mb-4 mt-2 flex justify-center gap-4 text-3xl">
-            {['😡', '😔', '😐', '😊', '🤩'].map((emoji) => (
-              <button
-                key={emoji}
-                className={`transition-all ${mood === emoji ? 'scale-125' : 'opacity-50'}`}
-                onClick={() => setMood(emoji)}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-
       <div className="mt-4">
         <button
           onClick={handleSubmit}
           disabled={saving}
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg text-lg animate-float animate-pulse-slow"
         >
-          {saving ? 'Saving...' : saveLabel}
+          {saving ? 'Saving...' : '🌱 Save & Feel Lighter'}
         </button>
       </div>
 
       {entries.length >= 3 && (
-        <div className="mt-6">
-          <GlowSummaryBox reflectionText={lastReflection} />
+        <div className="mt-6 bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[180px] overflow-y-auto">
+          {loadingSummary ? '✨ Your Glow Summary is forming...' : summary}
         </div>
       )}
 
-      <div className="mt-6">
-        <ReflectionGlow entries={entries} />
-      </div>
+      <button
+        onClick={() => setShowAll(!showAll)}
+        className="text-left text-xs text-purple-400 mt-4 mb-2 hover:underline"
+      >
+        📜 Your Echoes ({entries.length})
+      </button>
 
-      {entries.length > 0 && (
-        <div className="pt-4 border-t border-zinc-700">
-          <button
-            className="text-left w-full text-sm text-indigo-400 hover:text-indigo-200 mt-4 mb-2"
-            onClick={() => setShowAll(!showAll)}
-          >
-            📜 Your Echoes ({entries.length})
-          </button>
-          <div className="space-y-4">
-            {(showAll ? entries : [entries[0]]).map((entry) => (
-              <ReflectionEntry
-                key={entry.id}
-                entry={entry}
-                editingId={editingId}
-                editNote={editNote}
-                setEditNote={setEditNote}
-                setEditingId={setEditingId}
-                handleEditSave={handleEditSave}
-                handleDelete={handleDelete}
-              />
-            ))}
-          </div>
+      {showAll && entries.length > 0 && (
+        <div className="space-y-4 border-t border-zinc-700 pt-4">
+          {entries.map((entry) => (
+            <ReflectionEntry
+              key={entry.id}
+              entry={entry}
+              editingId={editingId}
+              editNote={editNote}
+              setEditNote={setEditNote}
+              setEditingId={setEditingId}
+              handleEditSave={handleEditSave}
+              handleDelete={handleDelete}
+            />
+          ))}
         </div>
       )}
 
