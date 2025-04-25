@@ -1,24 +1,18 @@
+// GlowSummaryBox.jsx
 import { useEffect, useState } from 'react';
 import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
-export default function GlowSummaryBox({ reflectionText }) {
+export default function GlowSummaryBox({ reflectionText, onLoading }) {
   const [summary, setSummary] = useState('');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!reflectionText) {
-      console.log('[GlowSummaryBox] No reflectionText provided.');
-      return;
-    }
-
-    console.log('[GlowSummaryBox] Triggering summary for:', reflectionText);
+    if (!reflectionText) return;
 
     const fetchSummary = async () => {
-      setLoading(true);
+      onLoading(true);
       const result = await getReflectionSummary(reflectionText);
-      console.log('[GlowSummaryBox] Summary received:', result);
       setSummary(result);
-      setLoading(false);
+      onLoading(false);
     };
 
     fetchSummary();
@@ -27,8 +21,8 @@ export default function GlowSummaryBox({ reflectionText }) {
   if (!reflectionText) return null;
 
   return (
-    <div className="mt-6 bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[180px] overflow-y-auto">
-      {loading ? '✨ Summarizing your reflection...' : summary}
+    <div className="mt-4 bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[180px] overflow-y-auto">
+      {summary}
     </div>
   );
 }
