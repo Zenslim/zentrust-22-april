@@ -18,7 +18,7 @@ import { useUserData } from '@/hooks/useUserData';
 import TypingAura from '@/components/TypingAura';
 import VoiceMic from '@/components/VoiceMic';
 import ReflectionEntry from '@/components/ReflectionEntry';
-import MirrorSummaryModal from '@/components/MirrorSummaryModal';
+import MirrorSummaryDrawer from '@/components/MirrorSummaryDrawer';
 import { PROMPTS, CTA_LABELS } from '@/data/journalConstants';
 import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
@@ -37,6 +37,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [mirrorSummary, setMirrorSummary] = useState('');
   const [showMirrorModal, setShowMirrorModal] = useState(false);
   const [summaryMode, setSummaryMode] = useState('last');
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -107,9 +108,12 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   };
 
   const handleSummary = async () => {
+    if (entries.length === 0) return;
+    setIsSummarizing(true);
     const reflectionText = summaryMode === 'last' ? entries[0]?.note : entries.map(e => e.note).join(' ');
     const result = await getReflectionSummary(reflectionText);
     setMirrorSummary(result);
+    setIsSummarizing(false);
     setShowMirrorModal(true);
   };
 
@@ -143,24 +147,23 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
       {reflectionCount >= 3 && (
-        <>
-          <div className="mt-4 flex justify-between items-center">
-            <button
-              className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800"
-              onClick={handleSummary}
-            >
-              🌟 Summarize My Journey
-            </button>
-            <select
-              value={summaryMode}
-              onChange={(e) => setSummaryMode(e.target.value)}
-              className="ml-2 bg-zinc-800 text-white px-2 py-1 rounded"
-            >
-              <option value="last">🪞 Last Reflection Only</option>
-              <option value="all">📚 All Reflections</option>
-            </select>
-          </div>
-        </>
+        <div className="mt-4 flex justify-between items-center">
+          <button
+            className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800 disabled:opacity-50"
+            onClick={handleSummary}
+            disabled={isSummarizing}
+          >
+            {isSummarizing ? '⏳ Creating Summary...' : '🌟 Summarize My Journey'}
+          </button>
+          <select
+            value={summaryMode}
+            onChange={(e) => setSummaryMode(e.target.value)}
+            className="ml-2 bg-zinc-800 text-white px-2 py-1 rounded"
+          >
+            <option value="last">🪞 Last Reflection Only</option>
+            <option value="all">📚 All Reflections</option>
+          </select>
+        </div>
       )}
 
       <div className="mt-6">
@@ -195,30 +198,11 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         </div>
       )}
 
-     {showMirrorModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
-    <div className="bg-zinc-900 text-white w-full max-w-md md:max-w-lg h-[80%] rounded-lg shadow-lg flex flex-col p-6">
-      <h2 className="text-xl font-semibold mb-2">🪞 Mirror Summary</h2>
-      <div className="flex-1 overflow-y-auto text-sm whitespace-pre-wrap leading-relaxed pr-1">
-        {mirrorSummary}
-      </div>
-      <div className="mt-4 flex justify-between gap-2">
-        <button
-          onClick={() => setShowMirrorModal(false)}
-          className="flex-1 bg-indigo-700 hover:bg-indigo-800 text-white py-2 px-4 rounded transition"
-        >
-          🔙 Back to Reflection
-        </button>
-        <button
-          onClick={() => alert('Full journal feature coming soon!')}
-          className="flex-1 bg-purple-700 hover:bg-purple-800 text-white py-2 px-4 rounded transition"
-        >
-          📖 Open Full Journal
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      <MirrorSummaryDrawer
+        summary={mirrorSummary}
+        isOpen={showMirrorModal}
+        onClose={() => setShowMirrorModal(false)}
+      />
     </div>
   );
 }
