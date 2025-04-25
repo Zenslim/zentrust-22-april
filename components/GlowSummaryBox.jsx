@@ -1,28 +1,31 @@
-// GlowSummaryBox.jsx
 import { useEffect, useState } from 'react';
 import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
-export default function GlowSummaryBox({ reflectionText, onLoading }) {
+export default function GlowSummaryBox({ reflectionText, entryCount }) {
   const [summary, setSummary] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!reflectionText) return;
+    if (entryCount < 3 || !reflectionText) return;
 
     const fetchSummary = async () => {
-      onLoading(true);
+      setLoading(true);
       const result = await getReflectionSummary(reflectionText);
       setSummary(result);
-      onLoading(false);
+      setLoading(false);
     };
 
     fetchSummary();
-  }, [reflectionText]);
+  }, [reflectionText, entryCount]);
 
-  if (!reflectionText) return null;
+  if (entryCount < 3 || !reflectionText) return null;
 
   return (
-    <div className="mt-4 bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[180px] overflow-y-auto">
-      {summary}
+    <div className="mt-6">
+      <p className="text-xs text-purple-300 mb-1">🧠 Summary from your journey so far...</p>
+      <div className="bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[180px] overflow-y-auto">
+        {loading ? '✨ Summarizing your reflection...' : summary}
+      </div>
     </div>
   );
 }
