@@ -5,12 +5,12 @@ export async function getReflectionSummary(reflectionText) {
   };
 
   const body = {
-    model: 'deepseek-ai/deepseek-v3-0324',
-    max_tokens: 300,
+    model: 'deepseek-ai/deepseek-chat', // ✅ working free model ID
+    max_tokens: 500,
     messages: [
       {
         role: 'system',
-        content: 'You summarize journal reflections with poetic warmth and deep clarity.',
+        content: 'You summarize personal reflections with poetic warmth and deep clarity.',
       },
       {
         role: 'user',
@@ -27,8 +27,7 @@ export async function getReflectionSummary(reflectionText) {
     });
 
     const json = await response.json();
-    console.log('[🧠 OpenRouter RAW]', JSON.stringify(json, null, 2)); // 👈 Log full response
-
+    console.log('[🧠 OpenRouter RAW]', JSON.stringify(json, null, 2));
     return json.choices?.[0]?.message?.content || 'Summary unavailable.';
   } catch (error) {
     console.error('DeepSeek summary error:', error);
