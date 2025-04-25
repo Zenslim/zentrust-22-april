@@ -196,22 +196,21 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
       {showAll && entries.length > 0 && (
-        <div className="space-y-4 border-t border-zinc-700 pt-4">
-          {entries.map((entry) => (
-            <ReflectionEntry
-              key={entry.id}
-              entry={entry}
-              editingId={editingId}
-              editNote={editNote}
-              setEditNote={setEditNote}
-              setEditingId={setEditingId}
-              handleEditSave={handleEditSave}
-              handleDelete={handleDelete}
-            />
-          ))}
-        </div>
-      )}
-
+  <div className="space-y-4 border-t border-zinc-700 pt-4">
+    {entries.filter(e => e?.note).map((entry) => (
+      <ReflectionEntry
+        key={entry.id}
+        entry={entry}
+        editingId={editingId}
+        editNote={editNote}
+        setEditNote={setEditNote}
+        setEditingId={setEditingId}
+        handleEditSave={handleEditSave}
+        handleDelete={handleDelete}
+      />
+    ))}
+  </div>
+)}
       {lastDeleted && (
         <div className="text-center mt-4">
           <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
