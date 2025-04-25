@@ -28,26 +28,14 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [editNote, setEditNote] = useState('');
   const [lastDeleted, setLastDeleted] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [summary, setSummary] = useState('');
-  const [loadingSummary, setLoadingSummary] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryText, setSummaryText] = useState('');
+  const [summaryScope, setSummaryScope] = useState('all');
 
   useEffect(() => {
     if (open) fetchEntries();
   }, [open]);
-
-  useEffect(() => {
-    if (entries.length >= 3) {
-      const latest = entries[0]?.note;
-      if (latest) {
-        setLoadingSummary(true);
-        getReflectionSummary(latest).then(res => {
-          setSummary(res);
-          setLoadingSummary(false);
-        });
-      }
-    }
-  }, [entries]);
 
   const fetchEntries = async () => {
     if (!user?.uid) return;
@@ -75,6 +63,20 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSummaryClick = async () => {
+    setSummaryLoading(true);
+
+    const reflectionsToUse = summaryScope === 'last'
+      ? [entries[0]?.note || '']
+      : entries.map(e => e.note);
+
+    const fullText = reflectionsToUse.join('\n');
+    const result = await getReflectionSummary(fullText);
+
+    setSummaryText(result);
+    setSummaryLoading(false);
   };
 
   const handleEditSave = async (id) => {
@@ -132,8 +134,27 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
       {entries.length >= 3 && (
-        <div className="mt-6 bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[180px] overflow-y-auto">
-          {loadingSummary ? '✨ Your Glow Summary is forming...' : summary}
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleSummaryClick}
+            className="px-4 py-2 rounded bg-indigo-700 hover:bg-indigo-800 text-white text-sm"
+          >
+            🌠 Summarize My Journey
+          </button>
+          <select
+            value={summaryScope}
+            onChange={(e) => setSummaryScope(e.target.value)}
+            className="mt-2 block mx-auto bg-zinc-800 text-white rounded p-1 text-xs"
+          >
+            <option value="all">🌀 All Reflections</option>
+            <option value="last">💭 Last Reflection Only</option>
+          </select>
+        </div>
+      )}
+
+      {summaryText && (
+        <div className="mt-6 bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[200px] overflow-y-auto">
+          {summaryLoading ? '✨ Weaving your glow…' : summaryText}
         </div>
       )}
 
