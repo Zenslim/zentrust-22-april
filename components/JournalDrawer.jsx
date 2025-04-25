@@ -38,6 +38,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [lastReflection, setLastReflection] = useState('');
   const [reflectionCount, setReflectionCount] = useState(0);
   const [showMirror, setShowMirror] = useState(false);
+  const [showAll, setShowAll] = useState(false); // 👈 new
 
   useEffect(() => {
     if (open) {
@@ -86,18 +87,13 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         mood: mood || '🤔 undefined',
         timestamp: serverTimestamp(),
       });
-
-      console.log('[JournalDrawer] Reflection submitted:', note);
-      setLastReflection(note); // triggers GlowSummaryBox
-      setReflectionCount(prev => prev + 1);
-
+      setLastReflection(note);
+      setReflectionCount((prev) => prev + 1);
       setNote('');
       setMood(null);
       setShowMood(false);
-
       await fetchEntries();
       if (onNewEntry) onNewEntry(entries.length + 1);
-
       setTimeout(() => {
         const el = document.querySelector('.journal-scroll');
         if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
@@ -183,12 +179,9 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
       {lastReflection && (
-        <>
-          {console.log('[JournalDrawer] Rendering GlowSummaryBox with:', lastReflection)}
-          <div className="mt-6">
-            <GlowSummaryBox reflectionText={lastReflection} />
-          </div>
-        </>
+        <div className="mt-6">
+          <GlowSummaryBox reflectionText={lastReflection} />
+        </div>
       )}
 
       {showMirror && (
@@ -202,27 +195,33 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 
       {entries.length > 0 && (
-  <div className="mt-6">
-    <button
-      onClick={() => setShowAll(prev => !prev)}
-      className="w-full bg-zinc-800 hover:bg-zinc-700 text-purple-200 px-4 py-2 rounded-md text-sm"
-    >
-      🔮 Your Echoes ({entries.length}) {showAll ? '▲' : '▼'}
-    </button>
+        <div className="mt-6">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="w-full text-indigo-400 underline mb-2"
+          >
+            {showAll
+              ? `🔽 Hide Echoes`
+              : `🔮 Your Echoes (${entries.length})`}
+          </button>
 
-    {showAll ? (
-      <div className="mt-4 space-y-4">
-        {entries.map((entry) => (
-          <ReflectionEntry key={entry.id} entry={entry} ... />
-        ))}
-      </div>
-    ) : (
-      <div className="mt-4">
-        <ReflectionEntry entry={entries[0]} ... />
-      </div>
-    )}
-  </div>
-)}
+          <div className="space-y-4 border-t border-zinc-700 pt-4">
+            {(showAll ? entries : [entries[0]]).map((entry) => (
+              <ReflectionEntry
+                key={entry.id}
+                entry={entry}
+                editingId={editingId}
+                editNote={editNote}
+                setEditNote={setEditNote}
+                setEditingId={setEditingId}
+                handleEditSave={handleEditSave}
+                handleDelete={handleDelete}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {lastDeleted && (
         <div className="text-center mt-4">
           <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
