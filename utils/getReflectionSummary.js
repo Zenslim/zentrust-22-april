@@ -5,7 +5,7 @@ export async function getReflectionSummary(reflectionText) {
   };
 
   const body = {
-    model: 'deepseek-ai/deepseek-v2',  // ✅ Known working free model ID
+    model: 'deepseek/deepseek-chat-v3-0324:free', // ✅ VERIFIED with your OpenRouter account
     max_tokens: 500,
     messages: [
       {
@@ -30,7 +30,7 @@ export async function getReflectionSummary(reflectionText) {
     console.log('[🧠 OpenRouter RAW]', JSON.stringify(json, null, 2));
     return json.choices?.[0]?.message?.content || 'Summary unavailable.';
   } catch (error) {
-    console.error('DeepSeek summary error:', error);
+    console.error('OpenRouter summary error:', error);
     return 'Summary failed. Please try again.';
   }
 }
