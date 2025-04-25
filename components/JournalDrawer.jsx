@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import { getReflectionSummary } from '@/utils/getReflectionSummary';
-import TypingAura from '@/components/TypingAura';
-import TextareaAutosize from 'react-textarea-autosize';
 import { db } from '../firebase';
 import {
   collection,
@@ -16,34 +13,53 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore';
+import TextareaAutosize from 'react-textarea-autosize';
 import { useUserData } from '@/hooks/useUserData';
+import TypingAura from '@/components/TypingAura';
 import VoiceMic from '@/components/VoiceMic';
 import ReflectionEntry from '@/components/ReflectionEntry';
+import MirrorSummaryModal from '@/components/MirrorSummaryModal';
+import { PROMPTS, CTA_LABELS } from '@/data/journalConstants';
+import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
 export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const user = useUserData();
   const [note, setNote] = useState('');
   const [entries, setEntries] = useState([]);
+  const [reflectionCount, setReflectionCount] = useState(0);
+  const [prompt, setPrompt] = useState(PROMPTS[0]);
+  const [saving, setSaving] = useState(false);
+  const [saveLabel, setSaveLabel] = useState(CTA_LABELS[0]);
+  const [showAll, setShowAll] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editNote, setEditNote] = useState('');
   const [lastDeleted, setLastDeleted] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [showAll, setShowAll] = useState(false);
-  const [summaryLoading, setSummaryLoading] = useState(false);
-  const [summaryText, setSummaryText] = useState('');
-  const [summaryScope, setSummaryScope] = useState('all');
+  const [mirrorSummary, setMirrorSummary] = useState('');
+  const [showMirrorModal, setShowMirrorModal] = useState(false);
+  const [summaryMode, setSummaryMode] = useState('last');
 
   useEffect(() => {
-    if (open) fetchEntries();
+    if (open) {
+      setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
+      fetchEntries();
+    }
   }, [open]);
+
+  useEffect(() => {
+    const labelInterval = setInterval(() => {
+      setSaveLabel(CTA_LABELS[Math.floor(Math.random() * CTA_LABELS.length)]);
+    }, 6000);
+    return () => clearInterval(labelInterval);
+  }, []);
 
   const fetchEntries = async () => {
     if (!user?.uid) return;
     const ref = collection(db, 'users', user.uid, 'journal');
     const q = query(ref, orderBy('timestamp', 'desc'));
     const snapshot = await getDocs(q);
-    const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     setEntries(docs);
+    setReflectionCount(docs.length);
   };
 
   const handleSubmit = async () => {
@@ -63,20 +79,6 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleSummaryClick = async () => {
-    setSummaryLoading(true);
-
-    const reflectionsToUse = summaryScope === 'last'
-      ? [entries[0]?.note || '']
-      : entries.map(e => e.note);
-
-    const fullText = reflectionsToUse.join('\n');
-    const result = await getReflectionSummary(fullText);
-
-    setSummaryText(result);
-    setSummaryLoading(false);
   };
 
   const handleEditSave = async (id) => {
@@ -104,9 +106,16 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     await fetchEntries();
   };
 
+  const handleSummary = async () => {
+    const reflectionText = summaryMode === 'last' ? entries[0]?.note : entries.map(e => e.note).join(' ');
+    const result = await getReflectionSummary(reflectionText);
+    setMirrorSummary(result);
+    setShowMirrorModal(true);
+  };
+
   return (
-    <div className={`journal-scroll fixed top-0 right-0 w-full md:w-[420px] h-full bg-zinc-900 text-white z-40 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto scroll-smooth p-6`}>
-      <h2 className="text-2xl font-semibold mb-4">🌀 What would lighten your load right now?</h2>
+    <div className={`fixed top-0 right-0 w-full md:w-[420px] h-full bg-zinc-900 text-white z-40 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto scroll-smooth p-6`}>
+      <h2 className="text-2xl font-semibold mb-4">{prompt}</h2>
 
       <TypingAura>
         <TextareaAutosize
@@ -127,43 +136,41 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg text-lg animate-float animate-pulse-slow"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg text-lg"
         >
-          {saving ? 'Saving...' : '🌱 Save & Feel Lighter'}
+          {saving ? 'Saving...' : saveLabel}
         </button>
       </div>
 
-      {entries.length >= 3 && (
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleSummaryClick}
-            className="px-4 py-2 rounded bg-indigo-700 hover:bg-indigo-800 text-white text-sm"
-          >
-            🌠 Summarize My Journey
-          </button>
-          <select
-            value={summaryScope}
-            onChange={(e) => setSummaryScope(e.target.value)}
-            className="mt-2 block mx-auto bg-zinc-800 text-white rounded p-1 text-xs"
-          >
-            <option value="all">🌀 All Reflections</option>
-            <option value="last">💭 Last Reflection Only</option>
-          </select>
-        </div>
+      {reflectionCount >= 3 && (
+        <>
+          <div className="mt-4 flex justify-between items-center">
+            <button
+              className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800"
+              onClick={handleSummary}
+            >
+              🌟 Summarize My Journey
+            </button>
+            <select
+              value={summaryMode}
+              onChange={(e) => setSummaryMode(e.target.value)}
+              className="ml-2 bg-zinc-800 text-white px-2 py-1 rounded"
+            >
+              <option value="last">🪞 Last Reflection Only</option>
+              <option value="all">📚 All Reflections</option>
+            </select>
+          </div>
+        </>
       )}
 
-      {summaryText && (
-        <div className="mt-6 bg-indigo-950 text-indigo-100 p-4 rounded-xl shadow-inner border border-indigo-700 whitespace-pre-wrap text-sm leading-relaxed max-h-[200px] overflow-y-auto">
-          {summaryLoading ? '✨ Weaving your glow…' : summaryText}
-        </div>
-      )}
-
-      <button
-        onClick={() => setShowAll(!showAll)}
-        className="text-left text-xs text-purple-400 mt-4 mb-2 hover:underline"
-      >
-        📜 Your Echoes ({entries.length})
-      </button>
+      <div className="mt-6">
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="text-sm text-purple-400 hover:text-purple-200"
+        >
+          📜 Your Echoes ({entries.length})
+        </button>
+      </div>
 
       {showAll && entries.length > 0 && (
         <div className="space-y-4 border-t border-zinc-700 pt-4">
@@ -186,6 +193,10 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         <div className="text-center mt-4">
           <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
         </div>
+      )}
+
+      {showMirrorModal && (
+        <MirrorSummaryModal summary={mirrorSummary} onClose={() => setShowMirrorModal(false)} />
       )}
     </div>
   );
