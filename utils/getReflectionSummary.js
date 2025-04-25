@@ -6,11 +6,11 @@ export async function getReflectionSummary(reflectionText) {
 
   const body = {
     model: 'deepseek-ai/deepseek-v3-0324',
-    max_tokens: 500, // ✅ Safe for OpenRouter free tier
+    max_tokens: 300,
     messages: [
       {
         role: 'system',
-        content: 'You summarize personal journal reflections with poetic clarity, insight, and compassion.',
+        content: 'You summarize journal reflections with poetic warmth and deep clarity.',
       },
       {
         role: 'user',
@@ -27,9 +27,11 @@ export async function getReflectionSummary(reflectionText) {
     });
 
     const json = await response.json();
+    console.log('[🧠 OpenRouter RAW]', JSON.stringify(json, null, 2)); // 👈 Log full response
+
     return json.choices?.[0]?.message?.content || 'Summary unavailable.';
   } catch (error) {
-    console.error('Gemini summary error:', error);
+    console.error('DeepSeek summary error:', error);
     return 'Summary failed. Please try again.';
   }
 }
