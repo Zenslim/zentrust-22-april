@@ -196,37 +196,25 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       </div>
 {showAll && entries.length > 0 && (
   <div className="space-y-4 border-t border-zinc-700 pt-4">
-    {entries.map((entry) => {
-      try {
-        if (
-          !entry ||
-          typeof entry !== 'object' ||
-          typeof entry.note !== 'string' ||
-          !entry.timestamp ||
-          (typeof entry.timestamp.toDate !== 'function' && !entry.timestamp.seconds) ||
-          !entry.id
-        ) {
-          console.warn('⛔ Skipping invalid entry (missing id or bad structure):', entry);
-          return null;
-        }
-
-        return (
-          <ReflectionEntry
-            key={entry.id}
-            entry={entry}
-            editingId={editingId}
-            editNote={editNote}
-            setEditNote={setEditNote}
-            setEditingId={setEditingId}
-            handleEditSave={handleEditSave}
-            handleDelete={handleDelete}
-          />
-        );
-      } catch (error) {
-        console.error('⚠️ Error rendering entry:', entry, error);
-        return null;
-      }
-    })}
+    {entries.filter(entry =>
+      entry &&
+      typeof entry === 'object' &&
+      typeof entry.note === 'string' &&
+      entry.timestamp &&
+      (typeof entry.timestamp.toDate === 'function' || entry.timestamp.seconds) &&
+      entry.id
+    ).map((entry) => (
+      <ReflectionEntry
+        key={entry.id}
+        entry={entry}
+        editingId={editingId}
+        editNote={editNote}
+        setEditNote={setEditNote}
+        setEditingId={setEditingId}
+        handleEditSave={handleEditSave}
+        handleDelete={handleDelete}
+      />
+    ))}
   </div>
 )}
 
