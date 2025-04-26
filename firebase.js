@@ -11,7 +11,8 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   FacebookAuthProvider,
-  TwitterAuthProvider
+  TwitterAuthProvider,
+  OAuthProvider
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -40,11 +41,14 @@ const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 const twitterProvider = new TwitterAuthProvider();
+const appleProvider = new OAuthProvider('apple.com'); // ✅ This was missing before
 
 export {
   app,
   auth,
   db,
+  setPersistence,
+  browserLocalPersistence,
   isSignInWithEmailLink,
   sendSignInLinkToEmail,
   signInWithEmailLink,
@@ -54,4 +58,5 @@ export {
   githubProvider,
   facebookProvider,
   twitterProvider,
+  appleProvider, // ✅ Exported properly
 };
