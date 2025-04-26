@@ -1,6 +1,6 @@
 'use client'
 import AmbientAudio from '@/components/AmbientAudio';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CelestialBackground from '@/components/CelestialBackground';
 import IkigaiPlanet from '@/components/IkigaiPlanet';
 import PlanetMessenger from '@/components/PlanetMessenger';
