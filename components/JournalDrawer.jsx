@@ -194,36 +194,30 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
           📜 Your Echoes ({entries.length})
         </button>
       </div>
-
-     {showAll && entries.length > 0 && (
+{showAll && entries.length > 0 && (
   <div className="space-y-4 border-t border-zinc-700 pt-4">
-    {entries.filter(e => e?.note).map((entry) => {
-      try {
-        return (
-          <ReflectionEntry
-            key={entry.id}
-            entry={entry}
-            editingId={editingId}
-            editNote={editNote}
-            setEditNote={setEditNote}
-            setEditingId={setEditingId}
-            handleEditSave={handleEditSave}
-            handleDelete={handleDelete}
-          />
-        );
-      } catch (error) {
-        console.error('Error rendering entry:', entry.id, error);
-        return (
-          <div key={entry.id} className="p-4 text-red-400 bg-zinc-800 rounded">
-            ⚠️ Failed to load this reflection.
-          </div>
-        );
-      }
-    })}
+    {entries.filter(e => e?.note && e?.timestamp).length > 0 ? (
+      entries.filter(e => e?.note && e?.timestamp).map((entry) => (
+        <ReflectionEntry
+          key={entry.id}
+          entry={entry}
+          editingId={editingId}
+          editNote={editNote}
+          setEditNote={setEditNote}
+          setEditingId={setEditingId}
+          handleEditSave={handleEditSave}
+          handleDelete={handleDelete}
+        />
+      ))
+    ) : (
+      <div className="text-center text-gray-400 mt-4">
+        🫧 No valid reflections found yet.
+      </div>
+    )}
   </div>
 )}
 
-      {lastDeleted && (
+       {lastDeleted && (
         <div className="text-center mt-4">
           <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
         </div>
