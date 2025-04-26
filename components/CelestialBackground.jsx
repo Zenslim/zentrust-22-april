@@ -58,11 +58,10 @@ export default function CelestialBackground() {
     }
     window.addEventListener('resize', handleResize)
 
-    return () => {
-      mountRef.current.removeChild(renderer.domElement)
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-
-  return <div ref={mountRef} className="fixed top-0 left-0 w-full h-full -z-10" />
+   return () => {
+  if (mountRef.current && renderer.domElement && mountRef.current.contains(renderer.domElement)) {
+    mountRef.current.removeChild(renderer.domElement);
+  }
+  window.removeEventListener('resize', handleResize);
 }
+
