@@ -203,14 +203,15 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
           typeof entry !== 'object' ||
           typeof entry.note !== 'string' ||
           !entry.timestamp ||
-          typeof entry.timestamp.toDate !== 'function'
+          (typeof entry.timestamp.toDate !== 'function' && !entry.timestamp.seconds)
         ) {
-          console.warn('Invalid entry skipped:', entry);
+          console.warn('⛔ Skipped invalid entry:', entry);
           return null;
         }
+
         return (
           <ReflectionEntry
-            key={entry.id}
+            key={entry.id || Math.random()}
             entry={entry}
             editingId={editingId}
             editNote={editNote}
@@ -221,9 +222,9 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
           />
         );
       } catch (error) {
-        console.error('Error rendering entry:', entry, error);
+        console.error('⚠️ Error rendering entry:', entry, error);
         return (
-          <div key={entry?.id || Math.random()} className="p-4 text-red-400 bg-zinc-800 rounded">
+          <div key={entry?.id || Math.random()} className="p-4 bg-zinc-800 rounded text-red-400">
             ⚠️ Failed to load this reflection.
           </div>
         );
@@ -231,6 +232,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     })}
   </div>
 )}
+
        {lastDeleted && (
         <div className="text-center mt-4">
           <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
