@@ -1,195 +1,123 @@
-import GlowSummaryBox from '@/components/GlowSummaryBox';
-import TypingAura from '@/components/TypingAura';
-import TextareaAutosize from 'react-textarea-autosize';
+'use client';
+
 import { useState, useEffect } from 'react';
-import { db } from '../firebase';
+import { db } from '@/firebase';
 import {
   collection,
   addDoc,
   getDocs,
+  deleteDoc,
+  updateDoc,
   orderBy,
   query,
   serverTimestamp,
-  updateDoc,
-  deleteDoc,
-  doc,
-  getDoc,
-  setDoc,
+  doc
 } from 'firebase/firestore';
-import { useUserData } from '@/hooks/useUserData';
-import VoiceMic from '@/components/VoiceMic';
 import { format } from 'date-fns';
+import TextareaAutosize from 'react-textarea-autosize';
+import VoiceMic from '@/components/VoiceMic';
+import TypingAura from '@/components/TypingAura';
 import ReflectionGlow from '@/components/ReflectionGlow';
+import GlowSummaryBox from '@/components/GlowSummaryBox';
+import TimelineDrawer from '@/components/TimelineDrawer';
+import TimelineButton from '@/components/TimelineButton';
+import MirrorSummaryDrawer from '@/components/MirrorSummaryDrawer';
 
-const PROMPTS = [
-  "🌿 What’s alive in you right now?",
-  "🧘 What truth are you avoiding?",
-  "🔥 What’s burning inside today?",
-  "🌊 What are you ready to release?",
-  "✨ What made you feel alive lately?",
-  "🌙 What are you holding in silence?",
-  "💡 What insight is asking to be heard?",
-  "🕊️ What does peace look like for you?",
-  "🌱 What is quietly growing within you?",
-  "🎭 What mask are you tired of wearing?",
-  "🌀 What’s spiraling in your mind today?",
-  "💭 What’s the thought you keep revisiting?",
-  "📿 What are you being called to remember?",
-  "🌤️ What would lighten your load right now?",
-  "📌 What truth are you circling around?",
-  "👁️ What do you see that others don’t?",
-  "🫧 What are you feeling but not saying?",
-  "🚪 What chapter wants to close today?",
-  "⛩️ What’s sacred for you right now?",
-  "🫀 Where does your heart want to go?",
-  "🛸 What feels out of place today?",
-  "🗺️ What direction feels right, even if unclear?",
-  "🧬 What story are you rewriting now?",
-  "📖 What wants to be expressed today?",
-];
-
-const CTA_LABELS = [
-  "🛸 Send to Your Future Self",
-  "🌌 Whisper to the Stars",
-  "🌿 Save & Feel Lighter",
-  "🎒 Carry This Forward",
-  "🪞 Reflect & Remember",
-  "🌱 Grow Into Your Purpose",
-  "💡 Reveal What Keeps You Going",
-  "✨ Awaken Your Why",
-];
-
-const MIRROR_HINTS = [
-  "🪞 Speak or type 3 reflections to meet the deeper you.",
-  "🗣️ Use voice or hand — your mirror responds at 3.",
-  "✨ 3 reflections unlock your inner mirror.",
-  "📖 Write or speak 3 times — your mirror awakens.",
-  "🔮 After 3 entries, your reflection begins to glow.",
-]; 
-export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
-  const user = useUserData();
+export default function JournalDrawer({ open, onClose, uid, onNewEntry }) {
   const [note, setNote] = useState('');
-  const [mood, setMood] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [prompt, setPrompt] = useState(PROMPTS[0]);
-  const [showMood, setShowMood] = useState(false);
-  const [saveLabel, setSaveLabel] = useState(CTA_LABELS[0]);
-  const [mirrorHint, setMirrorHint] = useState(MIRROR_HINTS[0]);
   const [entries, setEntries] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editNote, setEditNote] = useState("");
-  const [lastDeleted, setLastDeleted] = useState(null);
+  const [mood, setMood] = useState(null);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showSummaryDrawer, setShowSummaryDrawer] = useState(false);
 
   useEffect(() => {
     if (open) {
-      const random = Math.floor(Math.random() * PROMPTS.length);
-      setPrompt(PROMPTS[random]);
       fetchEntries();
     }
   }, [open]);
 
-  useEffect(() => {
-    const moodTrigger = note.trim().length > 5;
-    if (moodTrigger && !showMood) setShowMood(true);
-  }, [note]);
-
-  useEffect(() => {
-    const labelInterval = setInterval(() => {
-      setSaveLabel(CTA_LABELS[Math.floor(Math.random() * CTA_LABELS.length)]);
-    }, 6000);
-    const mirrorInterval = setInterval(() => {
-      setMirrorHint(MIRROR_HINTS[Math.floor(Math.random() * MIRROR_HINTS.length)]);
-    }, 8000);
-    return () => {
-      clearInterval(labelInterval);
-      clearInterval(mirrorInterval);
-    };
-  }, []);
-
   const fetchEntries = async () => {
-    if (!user?.uid) return;
-    const ref = collection(db, 'users', user.uid, 'journal');
-    const q = query(ref, orderBy('timestamp', 'desc'));
+    if (!uid) return;
+    const entriesRef = collection(db, 'bp', uid, 'entries');
+    const q = query(entriesRef, orderBy('timestamp', 'desc'));
     const snapshot = await getDocs(q);
-    const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     setEntries(docs);
   };
 
   const handleSubmit = async () => {
-    if (!user?.uid || !note.trim()) return;
-    setSaving(true);
-    try {
-      const ref = collection(db, 'users', user.uid, 'journal');
-      await addDoc(ref, {
-        note,
-        mood: mood || '🤔 undefined',
-        timestamp: serverTimestamp(),
-      });
+    if (!note.trim()) return;
+
+    if (uid && db) {
+      try {
+        const ref = collection(db, 'bp', uid, 'entries');
+        await addDoc(ref, {
+          note,
+          mood: mood || '🤔',
+          timestamp: serverTimestamp(),
+        });
+        setNote('');
+        setMood(null);
+        fetchEntries();
+        onNewEntry(entries.length + 1);
+      } catch (err) {
+        console.error('Error saving reflection:', err);
+      }
+    } else {
+      console.log('Demo Mode: Reflection not saved.');
       setNote('');
       setMood(null);
-      setShowMood(false);
-      await fetchEntries();
-      if (onNewEntry) onNewEntry(entries.length + 1);
-    } catch (e) {
-      console.error('Error saving journal:', e);
-    } finally {
-      setSaving(false);
+      onNewEntry(entries.length + 1);
     }
   };
 
-  const handleEditSave = async (id) => {
-    if (!editNote.trim()) return;
-    const ref = doc(db, 'users', user.uid, 'journal', id);
-    await updateDoc(ref, { note: editNote });
-    setEditingId(null);
-    setEditNote("");
-    await fetchEntries();
-  };
-
   const handleDelete = async (id) => {
-    const ref = doc(db, 'users', user.uid, 'journal', id);
-    const snap = await getDoc(ref);
-    setLastDeleted({ id, data: snap.data() });
-    await deleteDoc(ref);
-    await fetchEntries();
+    try {
+      await deleteDoc(doc(db, 'bp', uid, 'entries', id));
+      fetchEntries();
+    } catch (err) {
+      console.error('Error deleting reflection:', err);
+    }
   };
 
-  const handleUndo = async () => {
-    if (!lastDeleted) return;
-    const { id, data } = lastDeleted;
-    await setDoc(doc(db, 'users', user.uid, 'journal', id), data);
-    setLastDeleted(null);
-    await fetchEntries();
-  };
+  if (!open) return null;
 
   return (
-    <div className={`fixed top-0 right-0 w-full md:w-[420px] h-full bg-zinc-900 text-white p-6 z-40 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-      <h2 className="text-2xl font-semibold mb-4">{prompt}</h2>
+    <div className="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-zinc-900 shadow-xl overflow-y-auto z-50 p-6 text-white flex flex-col space-y-4">
+      {/* Close Button */}
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-4 text-zinc-400 hover:text-white text-2xl"
+      >
+        ✖
+      </button>
 
-      <TypingAura>
-        <TextareaAutosize
-          minRows={2}
-          maxRows={6}
-          className="w-full p-3 rounded bg-white text-black resize-none focus:outline-none text-base"
-          placeholder="Type or speak freely…"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-        />
-      </TypingAura>
+      {/* Typing Prompt */}
+      <h2 className="text-lg font-semibold pt-8 mb-2 flex justify-center">
+        <TypingAura />
+      </h2>
 
-      <div className="flex justify-end my-2">
-        <VoiceMic onTranscript={(text) => setNote((prev) => prev + ' ' + text)} />
-      </div>
+      {/* Textarea */}
+      <TextareaAutosize
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Type or speak freely..."
+        minRows={3}
+        className="w-full p-3 mt-1 bg-zinc-800 rounded-lg focus:outline-none resize-none text-white"
+      />
 
-      {showMood && (
+      {/* Mood Selection */}
+      {note.trim().length > 5 && (
         <>
-          <p className="text-sm mt-4 text-gray-400">Would you like to tag a mood?</p>
-          <div className="mb-4 mt-2 flex justify-center gap-4 text-3xl">
+          <p className="text-sm text-gray-400 mt-3 text-center">Would you like to tag a mood?</p>
+          <div className="flex justify-center gap-4 text-3xl py-2">
             {['😡', '😔', '😐', '😊', '🤩'].map((emoji) => (
               <button
                 key={emoji}
-                className={`transition-all ${mood === emoji ? 'scale-125' : 'opacity-50'}`}
                 onClick={() => setMood(emoji)}
+                className={`transition-all duration-300 ${
+                  mood === emoji ? 'scale-125' : 'opacity-60 hover:opacity-100'
+                }`}
               >
                 {emoji}
               </button>
@@ -198,64 +126,51 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         </>
       )}
 
-      <div className="text-xs text-center text-gray-400 italic mt-2">{mirrorHint}</div>
+      {/* Voice Mic */}
+      <VoiceMic onText={(text) => setNote(prev => prev + ' ' + text)} />
 
-      <div className="mt-4">
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg text-lg animate-float animate-pulse-slow"
-        >
-          {saving ? 'Saving...' : saveLabel}
-        </button>
-      </div>
+      {/* Save Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={!note.trim()}
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-semibold mt-4 disabled:opacity-40"
+      >
+        🚀 Carry This Forward
+      </button>
 
-      <div className="mt-6">
-        <ReflectionGlow entries={entries} />
-      </div>
-
-      {entries.length > 0 && (
-        <div className="mt-4 space-y-4 overflow-y-auto max-h-[30vh] border-t border-zinc-700 pt-4">
-          {entries.map((entry) => {
-            const date = entry.timestamp?.toDate?.();
-            const formattedDate = date ? format(date, 'MMM d, yyyy • h:mm a') : '⏳ Timeless';
-            return (
-              <div key={entry.id} className="bg-zinc-800 p-3 rounded-lg shadow">
-                <div className="text-sm text-gray-400 mb-1">🗓 {formattedDate}</div>
-                {editingId === entry.id ? (
-                  <>
-                    <TextareaAutosize
-                      minRows={2}
-                      className="w-full p-2 rounded bg-white text-black resize-none"
-                      value={editNote}
-                      onChange={(e) => setEditNote(e.target.value)}
-                    />
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={() => handleEditSave(entry.id)} className="bg-green-600 px-2 py-1 rounded text-white">Save</button>
-                      <button onClick={() => setEditingId(null)} className="bg-gray-600 px-2 py-1 rounded text-white">Cancel</button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="whitespace-pre-line text-blue-100 text-base">{entry.note}</div>
-                    <div className="flex gap-2 mt-2 text-sm">
-                      <button onClick={() => { setEditingId(entry.id); setEditNote(entry.note); }} className="text-blue-400">Edit</button>
-                      <button onClick={() => handleDelete(entry.id)} className="text-red-400">Delete</button>
-                    </div>
-                  </>
-                )}
+      {/* Reflections List */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-2">🧠 Your Echoes ({entries.length})</h3>
+        <div className="space-y-2">
+          {entries.map((entry) => (
+            <div
+              key={entry.id}
+              className="bg-zinc-800 p-3 rounded-md text-sm opacity-90"
+            >
+              <div className="flex justify-between items-center mb-1">
+                <span>{entry.mood || '🤔'}</span>
+                <span className="text-xs text-zinc-400">
+                  {entry.timestamp?.seconds
+                    ? format(new Date(entry.timestamp.seconds * 1000), 'PPpp')
+                    : 'Just now'}
+                </span>
               </div>
-            );
-          })}
-          <GlowSummaryBox entries={entries} />
+              <div className="whitespace-pre-wrap">{entry.note}</div>
+              <div className="flex justify-end space-x-3 mt-2 text-xs text-indigo-300">
+                <button onClick={() => setNote(entry.note)}>Edit</button>
+                <button onClick={() => handleDelete(entry.id)}>Delete</button>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {lastDeleted && (
-        <div className="text-center mt-4">
-          <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
-        </div>
-      )}
+      {/* Cosmic Backgrounds */}
+      <ReflectionGlow />
+
+      {/* Timeline and Mirror Drawers */}
+      <TimelineDrawer open={showTimeline} onClose={() => setShowTimeline(false)} uid={uid} />
+      <MirrorSummaryDrawer open={showSummaryDrawer} onClose={() => setShowSummaryDrawer(false)} entries={entries} />
     </div>
   );
 }
