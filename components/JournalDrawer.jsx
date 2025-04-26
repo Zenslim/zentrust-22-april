@@ -2,186 +2,151 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/firebase';
-import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  orderBy,
-  query,
-  serverTimestamp,
-  doc
-} from 'firebase/firestore';
+import { collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
-import TextareaAutosize from 'react-textarea-autosize';
 import VoiceMic from '@/components/VoiceMic';
-import TypingAura from '@/components/TypingAura';
 import GlowSummaryBox from '@/components/GlowSummaryBox';
-import TimelineDrawer from '@/components/TimelineDrawer';
-import TimelineButton from '@/components/TimelineButton';
+import TypingAura from '@/components/TypingAura';
 import ReflectionGlow from '@/components/ReflectionGlow';
-import MirrorSummaryDrawer from '@/components/MirrorSummaryDrawer';
 
-export default function JournalDrawer({ open, onClose, uid, onNewEntry }) {
-  const [note, setNote] = useState('');
+const PROMPTS = [
+  "🌿 What’s alive in you right now?",
+  "🧘 What truth are you avoiding?",
+  "🔥 What’s burning inside today?",
+  "🌊 What are you ready to release?",
+  "✨ What made you feel alive lately?",
+  "🌙 What are you holding in silence?",
+  "💡 What insight is asking to be heard?",
+  "🌸 Where does your soul feel most rooted?",
+  "🦋 What boundary do you need to honor?",
+  "🌌 What story keeps repeating inside you?",
+];
+
+const MOODS = [
+  { emoji: '😡', label: 'Angry' },
+  { emoji: '😔', label: 'Sad' },
+  { emoji: '😐', label: 'Neutral' },
+  { emoji: '😊', label: 'Happy' },
+  { emoji: '🤩', label: 'Excited' },
+];
+
+export default function JournalDrawer({ open, onClose, uid, onNewEntry, demoMode = false }) {
+  const [entry, setEntry] = useState('');
   const [entries, setEntries] = useState([]);
-  const [mood, setMood] = useState(null);
-  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
-  const [isMirrorOpen, setIsMirrorOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [prompt, setPrompt] = useState('');
 
   useEffect(() => {
-    if (open) {
-      fetchEntries();
-    }
-  }, [open]);
+    if (!uid || demoMode) return;
 
-  const fetchEntries = async () => {
-    if (!uid) return;
-    const ref = collection(db, 'bp', uid, 'entries');
-    const q = query(ref, orderBy('timestamp', 'desc'));
-    const snapshot = await getDocs(q);
-    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setEntries(docs);
-  };
+    const fetchEntries = async () => {
+      const q = query(collection(db, 'bp', uid, 'entries'), orderBy('timestamp', 'desc'));
+      const snapshot = await getDocs(q);
+      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setEntries(docs);
+      setLoading(false);
+    };
+
+    fetchEntries();
+  }, [uid, demoMode]);
+
+  useEffect(() => {
+    const randomPrompt = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+    setPrompt(randomPrompt);
+  }, []);
 
   const handleSubmit = async () => {
-    if (!note.trim()) return;
+    if (!entry.trim()) return;
 
-    if (uid && db) {
-      try {
-        const ref = collection(db, 'bp', uid, 'entries');
-        await addDoc(ref, {
-          note,
-          mood: mood || '🤔',
-          timestamp: serverTimestamp(),
-        });
-        setNote('');
-        setMood(null);
-        fetchEntries();
-        onNewEntry(entries.length + 1);
-      } catch (err) {
-        console.error('Error saving reflection:', err);
-      }
-    } else {
-      console.log('Demo Mode: Reflection not saved.');
-      setNote('');
-      setMood(null);
-      onNewEntry(entries.length + 1);
+    if (demoMode) {
+      const fakeEntry = {
+        text: entry,
+        timestamp: new Date(),
+        mood: selectedMood,
+      };
+      setEntries([fakeEntry, ...entries]);
+      setEntry('');
+      setSelectedMood(null);
+      if (onNewEntry) onNewEntry(entries.length + 1);
+      return;
     }
-  };
 
-  const handleDelete = async (id) => {
     try {
-      await deleteDoc(doc(db, 'bp', uid, 'entries', id));
-      fetchEntries();
-    } catch (err) {
-      console.error('Error deleting reflection:', err);
+      const entryRef = collection(db, 'bp', uid, 'entries');
+      await addDoc(entryRef, {
+        text: entry,
+        timestamp: serverTimestamp(),
+        mood: selectedMood,
+      });
+      setEntry('');
+      setSelectedMood(null);
+      if (onNewEntry) onNewEntry(entries.length + 1);
+    } catch (error) {
+      console.error('Error adding entry:', error);
     }
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-zinc-900 shadow-xl overflow-y-auto z-50 p-6 text-white flex flex-col">
-      {/* Close Button */}
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-4 text-zinc-400 hover:text-white text-2xl"
-      >
-        ✖
-      </button>
+    <div className="fixed top-0 right-0 w-full sm:w-96 h-full bg-zinc-900 text-white shadow-lg transform transition-transform duration-300 z-50 overflow-y-auto">
+      <button onClick={onClose} className="absolute top-4 right-6 text-2xl">✖️</button>
 
-      {/* Typing Prompt */}
-      <h2 className="text-xl font-semibold pt-10 mb-4 flex justify-center">
-        <TypingAura />
-      </h2>
+      <div className="p-6 space-y-4 mt-10">
+        <div className="text-lg font-semibold mb-2">
+          {prompt || "🌠 What truth are you circling around?"}
+        </div>
 
-      {/* Textarea */}
-      <TextareaAutosize
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        placeholder="Type or speak freely..."
-        minRows={3}
-        className="w-full p-3 bg-zinc-800 rounded-lg focus:outline-none resize-none text-white"
-      />
+        <textarea
+          rows={3}
+          value={entry}
+          onChange={(e) => setEntry(e.target.value)}
+          placeholder="Type or speak freely..."
+          className="w-full p-3 rounded-lg bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
 
-      {/* Mood Emoji Picker */}
-      {note.trim().length > 5 && (
-        <>
-          <p className="text-sm text-gray-400 mt-3 text-center">Would you like to tag a mood?</p>
-          <div className="flex justify-center gap-4 text-3xl py-2">
-            {['😡', '😔', '😐', '😊', '🤩'].map((emoji) => (
+        <VoiceMic setText={setEntry} />
+
+        {entry.length > 3 && (
+          <div className="flex flex-wrap gap-2 pt-2">
+            {MOODS.map((mood) => (
               <button
-                key={emoji}
-                onClick={() => setMood(emoji)}
-                className={`transition-all duration-300 ${
-                  mood === emoji ? 'scale-125' : 'opacity-60 hover:opacity-100'
-                }`}
+                key={mood.emoji}
+                onClick={() => setSelectedMood(mood.emoji)}
+                className={`p-2 text-2xl rounded-full ${selectedMood === mood.emoji ? 'bg-indigo-600' : 'bg-zinc-700'}`}
               >
-                {emoji}
+                {mood.emoji}
               </button>
             ))}
           </div>
-        </>
-      )}
+        )}
 
-      {/* Voice Mic */}
-      <div className="flex justify-center mt-4">
-        <VoiceMic onText={(text) => setNote((prev) => prev + ' ' + text)} />
-      </div>
-
-      {/* Whisper to the Stars Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!note.trim()}
-        className="w-full py-3 mt-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-semibold transition-all duration-300 disabled:opacity-40"
-      >
-        ✨ Whisper to the Stars
-      </button>
-
-      {/* Summarize My Journey */}
-      {entries.length >= 3 && (
         <button
-          onClick={() => setIsMirrorOpen(true)}
-          className="w-full py-3 mt-4 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 text-white font-semibold transition-all duration-300"
+          onClick={handleSubmit}
+          className="w-full py-3 mt-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-500 rounded-full font-semibold"
         >
-          🌟 Summarize My Journey
+          {demoMode ? "✨ Whisper to the Stars" : "🚀 Carry This Forward"}
         </button>
-      )}
 
-      {/* Echoes List */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold mb-2">🧠 Your Echoes ({entries.length})</h3>
-        <div className="space-y-2">
-          {entries.map((entry) => (
-            <div key={entry.id} className="bg-zinc-800 p-3 rounded-lg text-sm">
-              <div className="flex justify-between items-center mb-1">
-                <span>{entry.mood || '🤔'}</span>
-                <span className="text-xs text-zinc-400">
-                  {entry.timestamp?.seconds
-                    ? format(new Date(entry.timestamp.seconds * 1000), 'PPpp')
-                    : 'Just now'}
-                </span>
+        <div className="mt-6 space-y-2">
+          <div className="font-semibold text-pink-400">🧠 Your Echoes ({entries.length})</div>
+
+          {loading ? (
+            <div className="text-gray-400">Loading reflections...</div>
+          ) : (
+            entries.map((e, idx) => (
+              <div key={idx} className="bg-zinc-800 rounded-lg p-3 space-y-1">
+                <div className="text-sm text-gray-400">{format(e.timestamp?.toDate?.() || new Date(), 'PPP p')}</div>
+                <div>{e.text}</div>
+                {e.mood && <div className="text-2xl">{e.mood}</div>}
               </div>
-              <div className="whitespace-pre-wrap">{entry.note}</div>
-              <div className="flex justify-end mt-2 gap-4 text-xs text-indigo-400">
-                <button onClick={() => setNote(entry.note)}>Edit</button>
-                <button onClick={() => handleDelete(entry.id)}>Delete</button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
+
+        <ReflectionGlow />
       </div>
-
-      {/* Reflection Glow */}
-      <ReflectionGlow />
-
-      {/* Timeline Drawer */}
-      <TimelineButton visible={entries.length >= 3} onClick={() => setIsTimelineOpen(true)} />
-      <TimelineDrawer open={isTimelineOpen} onClose={() => setIsTimelineOpen(false)} uid={uid} />
-
-      {/* Mirror Summary Drawer */}
-      <MirrorSummaryDrawer open={isMirrorOpen} onClose={() => setIsMirrorOpen(false)} entries={entries} />
     </div>
   );
 }
