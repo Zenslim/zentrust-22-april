@@ -1,19 +1,19 @@
-'use client'
-
 import { useState, useEffect } from 'react';
-import AmbientAudio from '@/components/AmbientAudio';
-import CelestialBackground from '@/components/CelestialBackground';
-import IkigaiPlanet from '@/components/IkigaiPlanet';
-import PlanetMessenger from '@/components/PlanetMessenger';
-import CosmicWhisper from '@/components/CosmicWhisper';
-import MoonSync from '@/components/MoonSync';
-import JournalPrompt from '@/components/JournalPrompt';
-import JournalDrawer from '@/components/JournalDrawer';
-import TimelineDrawer from '@/components/TimelineDrawer';
-import TimelineButton from '@/components/TimelineButton';
-import GlowAudio from '@/components/GlowAudio';
+import dynamic from 'next/dynamic';
 
-export default function Zenboard({ params }) {
+const AmbientAudio = dynamic(() => import('@/components/AmbientAudio'), { ssr: false });
+const CelestialBackground = dynamic(() => import('@/components/CelestialBackground'), { ssr: false });
+const IkigaiPlanet = dynamic(() => import('@/components/IkigaiPlanet'), { ssr: false });
+const PlanetMessenger = dynamic(() => import('@/components/PlanetMessenger'), { ssr: false });
+const CosmicWhisper = dynamic(() => import('@/components/CosmicWhisper'), { ssr: false });
+const MoonSync = dynamic(() => import('@/components/MoonSync'), { ssr: false });
+const JournalPrompt = dynamic(() => import('@/components/JournalPrompt'), { ssr: false });
+const JournalDrawer = dynamic(() => import('@/components/JournalDrawer'), { ssr: false });
+const TimelineDrawer = dynamic(() => import('@/components/TimelineDrawer'), { ssr: false });
+const TimelineButton = dynamic(() => import('@/components/TimelineButton'), { ssr: false });
+const GlowAudio = dynamic(() => import('@/components/GlowAudio'), { ssr: false });
+
+export default function Zenboard() {
   const [isJournalOpen, setIsJournalOpen] = useState(false);
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
   const [entryCount, setEntryCount] = useState(0);
@@ -58,11 +58,11 @@ export default function Zenboard({ params }) {
       <JournalDrawer
         open={isJournalOpen}
         onClose={() => setIsJournalOpen(false)}
-        uid={params?.uid || ''}
+        uid=""
         onNewEntry={handleNewEntry}
       />
 
-      <TimelineDrawer open={isTimelineOpen} onClose={() => setIsTimelineOpen(false)} uid={params?.uid || ''} />
+      <TimelineDrawer open={isTimelineOpen} onClose={() => setIsTimelineOpen(false)} uid="" />
       <TimelineButton visible={entryCount >= 3} onClick={() => setIsTimelineOpen(true)} />
 
       <GlowAudio triggerWhisper={triggerWhisper} />
