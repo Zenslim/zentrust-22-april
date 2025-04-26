@@ -1,19 +1,19 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import AmbientAudio from '@/components/AmbientAudio';
+import CelestialBackground from '@/components/CelestialBackground';
+import IkigaiPlanet from '@/components/IkigaiPlanet';
+import PlanetMessenger from '@/components/PlanetMessenger';
+import CosmicWhisper from '@/components/CosmicWhisper';
+import MoonSync from '@/components/MoonSync';
+import JournalPrompt from '@/components/JournalPrompt';
+import JournalDrawer from '@/components/JournalDrawer';
+import TimelineDrawer from '@/components/TimelineDrawer';
+import TimelineButton from '@/components/TimelineButton';
+import GlowAudio from '@/components/GlowAudio';
 
-const AmbientAudio = dynamic(() => import('@/components/AmbientAudio'), { ssr: false });
-const CelestialBackground = dynamic(() => import('@/components/CelestialBackground'), { ssr: false });
-const IkigaiPlanet = dynamic(() => import('@/components/IkigaiPlanet'), { ssr: false });
-const PlanetMessenger = dynamic(() => import('@/components/PlanetMessenger'), { ssr: false });
-const CosmicWhisper = dynamic(() => import('@/components/CosmicWhisper'), { ssr: false });
-const MoonSync = dynamic(() => import('@/components/MoonSync'), { ssr: false });
-const JournalPrompt = dynamic(() => import('@/components/JournalPrompt'), { ssr: false });
-const JournalDrawer = dynamic(() => import('@/components/JournalDrawer'), { ssr: false });
-const TimelineDrawer = dynamic(() => import('@/components/TimelineDrawer'), { ssr: false });
-const TimelineButton = dynamic(() => import('@/components/TimelineButton'), { ssr: false });
-const GlowAudio = dynamic(() => import('@/components/GlowAudio'), { ssr: false });
-
-export default function Zenboard() {
+export default function Zenboard({ demoMode = false }) {
   const [isJournalOpen, setIsJournalOpen] = useState(false);
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
   const [entryCount, setEntryCount] = useState(0);
@@ -21,6 +21,22 @@ export default function Zenboard() {
   const [triggerWhisper, setTriggerWhisper] = useState(false);
 
   const handleNewEntry = (newTotal) => {
+    if (demoMode) {
+      console.log("Demo Mode: Reflection not saved.");
+      setEntryCount(newTotal); // Still increase count to unlock timeline fake
+      setTriggerWhisper(true);
+      setTimeout(() => setTriggerWhisper(false), 500);
+
+      if (newTotal === 3 && !timelineUnlocked) {
+        setTimelineUnlocked(true);
+        setTimeout(() => {
+          setIsTimelineOpen(true);
+        }, 1000);
+      }
+      return;
+    }
+
+    // Regular mode reflection save logic (if you add it)
     setEntryCount(newTotal);
     setTriggerWhisper(true);
     setTimeout(() => setTriggerWhisper(false), 500);
@@ -36,12 +52,10 @@ export default function Zenboard() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-transparent">
       <CelestialBackground />
-
       <div className="absolute inset-0 flex items-center justify-center z-10">
         <IkigaiPlanet onClick={() => window.open('/ikigai-theme', '_blank')} />
         <PlanetMessenger />
       </div>
-
       <div className="absolute bottom-56 sm:bottom-48 w-full flex justify-center px-4 z-40 animate-float">
         <button
           onClick={() => setIsJournalOpen(true)}
@@ -50,21 +64,17 @@ export default function Zenboard() {
           <JournalPrompt />
         </button>
       </div>
-
       <div className="absolute top-3 right-4 text-right z-20">
         <MoonSync />
       </div>
-
       <JournalDrawer
         open={isJournalOpen}
         onClose={() => setIsJournalOpen(false)}
         uid=""
         onNewEntry={handleNewEntry}
       />
-
       <TimelineDrawer open={isTimelineOpen} onClose={() => setIsTimelineOpen(false)} uid="" />
       <TimelineButton visible={entryCount >= 3} onClick={() => setIsTimelineOpen(true)} />
-
       <GlowAudio triggerWhisper={triggerWhisper} />
       <AmbientAudio enabled />
     </div>
