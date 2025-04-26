@@ -203,15 +203,16 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
           typeof entry !== 'object' ||
           typeof entry.note !== 'string' ||
           !entry.timestamp ||
-          (typeof entry.timestamp.toDate !== 'function' && !entry.timestamp.seconds)
+          (typeof entry.timestamp.toDate !== 'function' && !entry.timestamp.seconds) ||
+          !entry.id
         ) {
-          console.warn('⛔ Skipped invalid entry:', entry);
+          console.warn('⛔ Skipping invalid entry (missing id or bad structure):', entry);
           return null;
         }
 
         return (
           <ReflectionEntry
-            key={entry.id || Math.random()}
+            key={entry.id}
             entry={entry}
             editingId={editingId}
             editNote={editNote}
@@ -223,11 +224,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
         );
       } catch (error) {
         console.error('⚠️ Error rendering entry:', entry, error);
-        return (
-          <div key={entry?.id || Math.random()} className="p-4 bg-zinc-800 rounded text-red-400">
-            ⚠️ Failed to load this reflection.
-          </div>
-        );
+        return null;
       }
     })}
   </div>
