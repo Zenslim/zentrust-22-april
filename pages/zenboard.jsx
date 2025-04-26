@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import AmbientAudio from '@/components/AmbientAudio';
 import CelestialBackground from '@/components/CelestialBackground';
