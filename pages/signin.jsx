@@ -1,197 +1,90 @@
-import { useState, useEffect } from "react"
-import {
-  auth,
-  googleProvider,
-  facebookProvider,
-  twitterProvider,
-  signInWithPopup,
-  sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
-  signInAnonymously,
-  setPersistence,
-  browserLocalPersistence,
-} from "../firebase"
-import { useRouter } from "next/router"
+import { useRouter } from "next/router";
 
-export default function Signin() {
-  const [view, setView] = useState("choose")
-  const [email, setEmail] = useState("")
-  const [message, setMessage] = useState("")
-  const router = useRouter()
+export default function SignIn() {
+  const router = useRouter();
 
-  useEffect(() => {
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      let storedEmail = localStorage.getItem("emailForSignIn")
-      if (!storedEmail) storedEmail = prompt("Please provide your email")
-      if (storedEmail) {
-        setPersistence(auth, browserLocalPersistence).then(() => {
-          return signInWithEmailLink(auth, storedEmail, window.location.href)
-        })
-          .then(() => {
-            localStorage.removeItem("emailForSignIn")
-            setMessage("Signed in with magic link! Redirecting...")
-            router.push("/zenboard")
-          })
-          .catch(() => setMessage("Magic link sign-in failed"))
-      }
-    }
-  }, [])
+  const signInWithEmail = () => {
+    router.push("/signin/email");
+  };
 
-  const handleMagicLink = async () => {
-    const actionCodeSettings = {
-      url: window.location.href,
-      handleCodeInApp: true,
-    }
+  const signInWithGoogle = () => {
+    // trigger Google auth flow
+  };
 
-    try {
-      await setPersistence(auth, browserLocalPersistence)
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
-      localStorage.setItem("emailForSignIn", email)
-      setMessage("Check your inbox for a magic link ✨")
-    } catch (err) {
-      console.error(err)
-      setMessage("Could not send magic link.")
-    }
-  }
+  const signInWithFacebook = () => {
+    // trigger Facebook auth flow
+  };
 
-  const handleProviderLogin = async (provider) => {
-    try {
-      await signInWithPopup(auth, provider)
-      router.push("/zenboard")
-    } catch {
-      setMessage("Social login failed")
-    }
-  }
+  const signInWithApple = () => {
+    // trigger Apple auth flow
+  };
 
-  const handleGuestLogin = async () => {
-    try {
-      await signInAnonymously(auth)
-      router.push("/zenboard")
-    } catch (err) {
-      console.error(err)
-      setMessage("Guest access failed")
-    }
-  }
+  const connectWallet = () => {
+    // trigger WalletConnect flow
+  };
+
+  const enterDemoMode = () => {
+    router.push("/demo");
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full space-y-6">
-        <h1 className="text-2xl font-semibold text-center text-gray-800">
-          Welcome to ZenTrust
-        </h1>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white px-4">
+      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">
+        🌟 Welcome to ZenTrust
+      </h1>
 
-        {view === "choose" && (
-          <div className="space-y-4">
-            <button
-              onClick={() => setView("email")}
-              className="w-full py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 shadow-lg flex items-center justify-center space-x-3"
-            >
-              <span>📧</span>
-              <span>Sign in with Email</span>
-            </button>
+      <div className="flex flex-col gap-4 w-full max-w-sm">
 
-            <button
-              onClick={() => setView("guest")}
-              className="w-full py-3 px-4 rounded-xl bg-yellow-100 text-yellow-900 font-semibold hover:bg-yellow-200 shadow-md flex items-center justify-center space-x-3"
-            >
-              <span>🌿</span>
-              <span>Explore First (Guest Access)</span>
-            </button>
+        {/* Primary Email Button */}
+        <button
+          onClick={signInWithEmail}
+          className="bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition"
+        >
+          📧 Sign in with Email
+        </button>
 
-            <hr className="border-t my-2" />
+        {/* Social Buttons */}
+        <button
+          onClick={signInWithGoogle}
+          className="bg-white hover:bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition"
+        >
+          🔑 Continue with Google
+        </button>
 
-            <div className="flex flex-col space-y-3">
-              <button
-                onClick={() => handleProviderLogin(googleProvider)}
-                className="w-full py-3 px-4 rounded-xl bg-white border text-gray-800 hover:bg-gray-100 flex items-center justify-center space-x-3 shadow"
-              >
-                <span>🔑</span>
-                <span>Continue with Google</span>
-              </button>
+        <button
+          onClick={signInWithFacebook}
+          className="bg-white hover:bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition"
+        >
+          👥 Continue with Facebook
+        </button>
 
-              <button
-                onClick={() => handleProviderLogin(facebookProvider)}
-                className="w-full py-3 px-4 rounded-xl bg-white border text-gray-800 hover:bg-gray-100 flex items-center justify-center space-x-3 shadow"
-              >
-                <span>👤</span>
-                <span>Continue with Facebook</span>
-              </button>
+        <button
+          onClick={signInWithApple}
+          className="bg-white hover:bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition"
+        >
+          🍎 Continue with Apple
+        </button>
 
-              <button
-                onClick={() => handleProviderLogin(twitterProvider)}
-                className="w-full py-3 px-4 rounded-xl bg-white border text-gray-800 hover:bg-gray-100 flex items-center justify-center space-x-3 shadow"
-              >
-                <span>🐦</span>
-                <span>Continue with Twitter</span>
-              </button>
+        {/* Wallet Connect */}
+        <button
+          onClick={connectWallet}
+          className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:opacity-90 text-white py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition"
+        >
+          🦋 Connect Wallet (Web3)
+        </button>
 
-              <button
-                onClick={() => alert("Web3 login coming soon.")}
-                className="w-full py-3 px-4 rounded-xl bg-white border text-indigo-700 hover:bg-indigo-50 flex items-center justify-center space-x-3 shadow"
-              >
-                <span>🧬</span>
-                <span>Connect Wallet (Web3)</span>
-              </button>
-            </div>
-
-            {message && (
-              <p className="text-sm text-green-600 text-center pt-2">{message}</p>
-            )}
-          </div>
-        )}
-
-        {view === "email" && (
-          <div className="space-y-4">
-            <input
-              type="email"
-              required
-              placeholder="Your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded-xl"
-            />
-            <button
-              onClick={handleMagicLink}
-              className="w-full py-2 px-4 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700"
-            >
-              ✨ Send Magic Link
-            </button>
-            <button
-              onClick={() => setView("choose")}
-              className="text-sm text-gray-500 underline"
-            >
-              ← Back
-            </button>
-            {message && (
-              <p className="text-sm text-green-600 text-center pt-2">{message}</p>
-            )}
-          </div>
-        )}
-
-        {view === "guest" && (
-          <div className="space-y-4 text-center">
-            <p className="text-gray-600">
-              You’re entering as a guest. Some features may be limited.
-            </p>
-            <button
-              onClick={handleGuestLogin}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
-            >
-              🧳 Continue as Guest
-            </button>
-            <button
-              onClick={() => setView("choose")}
-              className="text-sm text-gray-500 underline"
-            >
-              ← Back
-            </button>
-            {message && (
-              <p className="text-sm text-green-600 text-center pt-2">{message}</p>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Explore Demo Mode */}
+      <div className="mt-8">
+        <button
+          onClick={enterDemoMode}
+          className="bg-yellow-200 hover:bg-yellow-300 text-black py-2 px-6 rounded-full font-medium text-md flex items-center justify-center gap-2 shadow-sm transition"
+        >
+          🌱 Explore Demo Mode
+        </button>
+      </div>
+
     </div>
-  )
+  );
 }
