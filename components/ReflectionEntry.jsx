@@ -19,12 +19,27 @@ export default function ReflectionEntry({
   }
 
   const note = typeof entry.note === 'string' ? entry.note : '🫧 Empty reflection';
-  const dateObj = entry.timestamp?.toDate?.();
-  const formattedDate = dateObj ? format(dateObj, 'MMM d, yyyy • h:mm a') : '⏳ Timeless';
+
+  let formattedDate = '⏳ Timeless';
+  try {
+    if (entry.timestamp) {
+      let dateObj;
+      if (typeof entry.timestamp.toDate === 'function') {
+        dateObj = entry.timestamp.toDate();
+      } else if (entry.timestamp.seconds) {
+        dateObj = new Date(entry.timestamp.seconds * 1000);
+      }
+      if (dateObj) {
+        formattedDate = format(dateObj, 'MMM d, yyyy • h:mm a');
+      }
+    }
+  } catch (error) {
+    console.error('Invalid timestamp:', error);
+  }
 
   return (
-    <div className="bg-zinc-800 p-3 rounded-lg shadow">
-      <div className="text-sm text-gray-400 mb-1">🗓 {formattedDate}</div>
+    <div className="bg-zinc-800 p-3 rounded-lg shadow space-y-2">
+      <div className="text-sm text-gray-400">🗓 {formattedDate}</div>
 
       {editingId === entry.id ? (
         <>
@@ -35,8 +50,18 @@ export default function ReflectionEntry({
             onChange={(e) => setEditNote(e.target.value)}
           />
           <div className="flex gap-2 mt-2">
-            <button onClick={() => handleEditSave(entry.id)} className="bg-green-600 px-2 py-1 rounded text-white">Save</button>
-            <button onClick={() => setEditingId(null)} className="bg-gray-600 px-2 py-1 rounded text-white">Cancel</button>
+            <button
+              onClick={() => handleEditSave(entry.id)}
+              className="bg-green-600 px-2 py-1 rounded text-white"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setEditingId(null)}
+              className="bg-gray-600 px-2 py-1 rounded text-white"
+            >
+              Cancel
+            </button>
           </div>
         </>
       ) : (
