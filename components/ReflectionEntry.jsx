@@ -10,12 +10,22 @@ export default function ReflectionEntry({
   handleEditSave,
   handleDelete
 }) {
-  const date = entry.timestamp?.toDate?.();
-  const formattedDate = date ? format(date, 'MMM d, yyyy • h:mm a') : '⏳ Timeless';
+  if (!entry || typeof entry !== 'object') {
+    return (
+      <div className="bg-zinc-800 p-3 rounded-lg shadow text-red-400">
+        ⚠️ Invalid reflection entry.
+      </div>
+    );
+  }
+
+  const note = typeof entry.note === 'string' ? entry.note : '🫧 Empty reflection';
+  const dateObj = entry.timestamp?.toDate?.();
+  const formattedDate = dateObj ? format(dateObj, 'MMM d, yyyy • h:mm a') : '⏳ Timeless';
 
   return (
     <div className="bg-zinc-800 p-3 rounded-lg shadow">
       <div className="text-sm text-gray-400 mb-1">🗓 {formattedDate}</div>
+
       {editingId === entry.id ? (
         <>
           <TextareaAutosize
@@ -31,10 +41,23 @@ export default function ReflectionEntry({
         </>
       ) : (
         <>
-          <div className="whitespace-pre-line text-blue-100 text-base">{entry.note}</div>
+          <div className="whitespace-pre-line text-blue-100 text-base">{note}</div>
           <div className="flex gap-2 mt-2 text-sm">
-            <button onClick={() => { setEditingId(entry.id); setEditNote(entry.note); }} className="text-blue-400">Edit</button>
-            <button onClick={() => handleDelete(entry.id)} className="text-red-400">Delete</button>
+            <button
+              onClick={() => {
+                setEditingId(entry.id);
+                setEditNote(note);
+              }}
+              className="text-blue-400"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(entry.id)}
+              className="text-red-400"
+            >
+              Delete
+            </button>
           </div>
         </>
       )}
