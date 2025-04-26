@@ -76,6 +76,7 @@ export default function Signin() {
 
         {view === "choose" && (
           <div className="space-y-4">
+            {/* Email Magic Link */}
             <button
               onClick={() => setView("email")}
               className="w-full py-3 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 shadow-lg flex items-center justify-center space-x-3"
@@ -84,8 +85,18 @@ export default function Signin() {
               <span>Sign in with Email</span>
             </button>
 
+            {/* Explore Demo Mode */}
+            <button
+              onClick={() => router.push("/demo")}
+              className="w-full py-3 px-4 rounded-xl bg-yellow-100 text-yellow-900 font-semibold hover:bg-yellow-200 shadow-md flex items-center justify-center space-x-3"
+            >
+              <span>🌿</span>
+              <span>Explore Demo Mode</span>
+            </button>
+
             <hr className="border-t my-2" />
 
+            {/* Social Logins */}
             <div className="flex flex-col space-y-3">
               <button
                 onClick={() => handleProviderLogin(googleProvider)}
@@ -99,7 +110,7 @@ export default function Signin() {
                 onClick={() => handleProviderLogin(facebookProvider)}
                 className="w-full py-3 px-4 rounded-xl bg-white border text-gray-800 hover:bg-gray-100 flex items-center justify-center space-x-3 shadow"
               >
-                <span>👤</span>
+                <span>👥</span>
                 <span>Continue with Facebook</span>
               </button>
 
@@ -111,6 +122,7 @@ export default function Signin() {
                 <span>Continue with Apple</span>
               </button>
 
+              {/* Wallet Connect Placeholder */}
               <button
                 onClick={connectWallet}
                 className="w-full py-3 px-4 rounded-xl bg-white border text-indigo-700 hover:bg-indigo-50 flex items-center justify-center space-x-3 shadow"
