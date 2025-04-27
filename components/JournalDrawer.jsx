@@ -1,152 +1,245 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { db } from '@/firebase';
-import { collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
-import { format } from 'date-fns';
-import VoiceMic from '@/components/VoiceMic';
-import GlowSummaryBox from '@/components/GlowSummaryBox';
+import { useEffect, useState } from 'react';
+import { db } from '../firebase';
+import {
+  collection, addDoc, getDocs, orderBy, query, serverTimestamp,
+  updateDoc, deleteDoc, doc, getDoc, setDoc
+} from 'firebase/firestore';
+import TextareaAutosize from 'react-textarea-autosize';
+import { useUserData } from '@/hooks/useUserData';
 import TypingAura from '@/components/TypingAura';
-import ReflectionGlow from '@/components/ReflectionGlow';
+import VoiceMic from '@/components/VoiceMic';
+import ReflectionEntry from '@/components/ReflectionEntry';
+import MirrorSummaryDrawer from '@/components/MirrorSummaryDrawer';
+import DateRangePicker from '@/components/DateRangePicker';
+import { PROMPTS, CTA_LABELS } from '@/data/journalConstants';
+import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
-const PROMPTS = [
-  "🌿 What’s alive in you right now?",
-  "🧘 What truth are you avoiding?",
-  "🔥 What’s burning inside today?",
-  "🌊 What are you ready to release?",
-  "✨ What made you feel alive lately?",
-  "🌙 What are you holding in silence?",
-  "💡 What insight is asking to be heard?",
-  "🌸 Where does your soul feel most rooted?",
-  "🦋 What boundary do you need to honor?",
-  "🌌 What story keeps repeating inside you?",
-];
-
-const MOODS = [
-  { emoji: '😡', label: 'Angry' },
-  { emoji: '😔', label: 'Sad' },
-  { emoji: '😐', label: 'Neutral' },
-  { emoji: '😊', label: 'Happy' },
-  { emoji: '🤩', label: 'Excited' },
-];
-
-export default function JournalDrawer({ open, onClose, uid, onNewEntry, demoMode = false }) {
-  const [entry, setEntry] = useState('');
+export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
+  const user = useUserData();
+  const [note, setNote] = useState('');
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedMood, setSelectedMood] = useState(null);
-  const [prompt, setPrompt] = useState('');
+  const [reflectionCount, setReflectionCount] = useState(0);
+  const [prompt, setPrompt] = useState(PROMPTS[0]);
+  const [saving, setSaving] = useState(false);
+  const [saveLabel, setSaveLabel] = useState(CTA_LABELS[0]);
+  const [showAll, setShowAll] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editNote, setEditNote] = useState('');
+  const [lastDeleted, setLastDeleted] = useState(null);
+  const [mirrorSummary, setMirrorSummary] = useState('');
+  const [showMirrorModal, setShowMirrorModal] = useState(false);
+  const [summaryMode, setSummaryMode] = useState('last');
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [customRange, setCustomRange] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
-    if (!uid || demoMode) return;
-
-    const fetchEntries = async () => {
-      const q = query(collection(db, 'bp', uid, 'entries'), orderBy('timestamp', 'desc'));
-      const snapshot = await getDocs(q);
-      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setEntries(docs);
-      setLoading(false);
-    };
-
-    fetchEntries();
-  }, [uid, demoMode]);
+    if (open) {
+      setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
+      fetchEntries();
+    }
+  }, [open]);
 
   useEffect(() => {
-    const randomPrompt = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
-    setPrompt(randomPrompt);
+    const labelInterval = setInterval(() => {
+      setSaveLabel(CTA_LABELS[Math.floor(Math.random() * CTA_LABELS.length)]);
+    }, 6000);
+    return () => clearInterval(labelInterval);
   }, []);
 
+  const fetchEntries = async () => {
+    if (!user?.uid) return;
+    const ref = collection(db, 'users', user.uid, 'journal');
+    const q = query(ref, orderBy('timestamp', 'desc'));
+    const snapshot = await getDocs(q);
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setEntries(docs);
+    setReflectionCount(docs.length);
+  };
+
   const handleSubmit = async () => {
-    if (!entry.trim()) return;
-
-    if (demoMode) {
-      const fakeEntry = {
-        text: entry,
-        timestamp: new Date(),
-        mood: selectedMood,
-      };
-      setEntries([fakeEntry, ...entries]);
-      setEntry('');
-      setSelectedMood(null);
-      if (onNewEntry) onNewEntry(entries.length + 1);
-      return;
-    }
-
+    if (!user?.uid || !note.trim()) return;
+    setSaving(true);
     try {
-      const entryRef = collection(db, 'bp', uid, 'entries');
-      await addDoc(entryRef, {
-        text: entry,
+      const ref = collection(db, 'users', user.uid, 'journal');
+      await addDoc(ref, {
+        note,
         timestamp: serverTimestamp(),
-        mood: selectedMood,
       });
-      setEntry('');
-      setSelectedMood(null);
+      setNote('');
+      await fetchEntries();
       if (onNewEntry) onNewEntry(entries.length + 1);
-    } catch (error) {
-      console.error('Error adding entry:', error);
+    } catch (e) {
+      console.error('Error saving journal:', e);
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (!open) return null;
+  const handleSummary = async () => {
+    if (entries.length === 0) return;
+    if (summaryMode === 'custom' && !customRange) {
+      setShowDatePicker(true);
+      return;
+    }
+
+    setIsSummarizing(true);
+    let reflectionText = '';
+    const now = new Date();
+
+    if (summaryMode === 'last') {
+      reflectionText = entries[0]?.note || '';
+    } else if (summaryMode === 'all') {
+      reflectionText = entries.map(e => e.note).join(' ');
+    } else if (summaryMode === 'random3') {
+      const randomEntries = [...entries].sort(() => 0.5 - Math.random()).slice(0, 3);
+      reflectionText = randomEntries.map(e => e.note).join(' ');
+    } else if (summaryMode === 'morning') {
+      reflectionText = entries.filter(e => {
+        const hour = e.timestamp?.toDate?.().getHours?.() || 0;
+        return hour >= 5 && hour < 12;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'evening') {
+      reflectionText = entries.filter(e => {
+        const hour = e.timestamp?.toDate?.().getHours?.() || 0;
+        return hour >= 18 || hour < 5;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'longest') {
+      const longestEntry = entries.reduce((a, b) => (a.note.length > b.note.length ? a : b), entries[0]);
+      reflectionText = longestEntry?.note || '';
+    } else if (summaryMode === 'oneday') {
+      reflectionText = entries.filter(e => {
+        const timestamp = e.timestamp?.toDate?.();
+        return timestamp && (now - timestamp) <= 24 * 60 * 60 * 1000;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'oneweek') {
+      reflectionText = entries.filter(e => {
+        const timestamp = e.timestamp?.toDate?.();
+        return timestamp && (now - timestamp) <= 7 * 24 * 60 * 60 * 1000;
+      }).map(e => e.note).join(' ');
+    } else if (summaryMode === 'custom' && customRange) {
+      reflectionText = entries.filter(e => {
+        const timestamp = e.timestamp?.toDate?.();
+        return timestamp && new Date(customRange.start) <= timestamp && timestamp <= new Date(customRange.end);
+      }).map(e => e.note).join(' ');
+    }
+
+    const result = await getReflectionSummary(reflectionText || 'No suitable reflections found.');
+    setMirrorSummary(result);
+    setIsSummarizing(false);
+    setShowMirrorModal(true);
+  };
 
   return (
-    <div className="fixed top-0 right-0 w-full sm:w-96 h-full bg-zinc-900 text-white shadow-lg transform transition-transform duration-300 z-50 overflow-y-auto">
-      <button onClick={onClose} className="absolute top-4 right-6 text-2xl">✖️</button>
+    <div className={`fixed top-0 right-0 w-full md:w-[420px] h-full bg-zinc-900 text-white z-40 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto scroll-smooth p-6`}>
+      <h2 className="text-2xl font-semibold mb-4">{prompt}</h2>
 
-      <div className="p-6 space-y-4 mt-10">
-        <div className="text-lg font-semibold mb-2">
-          {prompt || "🌠 What truth are you circling around?"}
-        </div>
-
-        <textarea
-          rows={3}
-          value={entry}
-          onChange={(e) => setEntry(e.target.value)}
-          placeholder="Type or speak freely..."
-          className="w-full p-3 rounded-lg bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      <TypingAura>
+        <TextareaAutosize
+          minRows={2}
+          maxRows={6}
+          className="w-full p-3 rounded bg-white text-black resize-none focus:outline-none text-base"
+          placeholder="Type or speak freely…"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
         />
+      </TypingAura>
 
-        <VoiceMic setText={setEntry} />
+      <div className="flex justify-end my-2">
+        <VoiceMic onTranscript={(text) => setNote((prev) => prev + ' ' + text)} />
+      </div>
 
-        {entry.length > 3 && (
-          <div className="flex flex-wrap gap-2 pt-2">
-            {MOODS.map((mood) => (
-              <button
-                key={mood.emoji}
-                onClick={() => setSelectedMood(mood.emoji)}
-                className={`p-2 text-2xl rounded-full ${selectedMood === mood.emoji ? 'bg-indigo-600' : 'bg-zinc-700'}`}
-              >
-                {mood.emoji}
-              </button>
-            ))}
-          </div>
-        )}
-
+      <div className="mt-4">
         <button
           onClick={handleSubmit}
-          className="w-full py-3 mt-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-500 rounded-full font-semibold"
+          disabled={saving}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg text-lg"
         >
-          {demoMode ? "✨ Whisper to the Stars" : "🚀 Carry This Forward"}
+          {saving ? 'Saving...' : saveLabel}
         </button>
-
-        <div className="mt-6 space-y-2">
-          <div className="font-semibold text-pink-400">🧠 Your Echoes ({entries.length})</div>
-
-          {loading ? (
-            <div className="text-gray-400">Loading reflections...</div>
-          ) : (
-            entries.map((e, idx) => (
-              <div key={idx} className="bg-zinc-800 rounded-lg p-3 space-y-1">
-                <div className="text-sm text-gray-400">{format(e.timestamp?.toDate?.() || new Date(), 'PPP p')}</div>
-                <div>{e.text}</div>
-                {e.mood && <div className="text-2xl">{e.mood}</div>}
-              </div>
-            ))
-          )}
-        </div>
-
-        <ReflectionGlow />
       </div>
+
+      {reflectionCount >= 3 && (
+        <div className="mt-4 flex justify-between items-center">
+          <button
+            className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800 disabled:opacity-50"
+            onClick={handleSummary}
+            disabled={isSummarizing}
+          >
+            {isSummarizing ? '⏳ Creating Summary...' : '🌟 Summarize My Journey'}
+          </button>
+          <select
+            value={summaryMode}
+            onChange={(e) => setSummaryMode(e.target.value)}
+            className="ml-2 bg-zinc-800 text-white px-2 py-1 rounded"
+          >
+            <option value="last">🪞 Last Reflection Only</option>
+            <option value="all">📚 All Reflections</option>
+            <option value="random3">🎲 Random 3 Reflections</option>
+            <option value="morning">🌅 Morning Reflections</option>
+            <option value="evening">🌙 Evening Reflections</option>
+            <option value="longest">🧠 Longest Reflection</option>
+            <option value="oneday">🕰️ Past 24 Hours</option>
+            <option value="oneweek">🗓️ Past 7 Days</option>
+            <option value="custom">📅 Custom Range</option>
+          </select>
+        </div>
+      )}
+
+      <div className="mt-6">
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="text-sm text-purple-400 hover:text-purple-200"
+        >
+          📜 Your Echoes ({entries.length})
+        </button>
+      </div>
+{showAll && entries.length > 0 && (
+  <div className="space-y-4 border-t border-zinc-700 pt-4">
+    {entries.filter(entry =>
+      entry &&
+      typeof entry === 'object' &&
+      typeof entry.note === 'string' &&
+      entry.timestamp &&
+      (typeof entry.timestamp.toDate === 'function' || entry.timestamp.seconds) &&
+      entry.id
+    ).map((entry) => (
+      <ReflectionEntry
+        key={entry.id}
+        entry={entry}
+        editingId={editingId}
+        editNote={editNote}
+        setEditNote={setEditNote}
+        setEditingId={setEditingId}
+        handleEditSave={handleEditSave}
+        handleDelete={handleDelete}
+      />
+    ))}
+  </div>
+)}
+
+       {lastDeleted && (
+        <div className="text-center mt-4">
+          <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
+        </div>
+      )}
+
+      <MirrorSummaryDrawer
+        summary={mirrorSummary}
+        isOpen={showMirrorModal}
+        onClose={() => setShowMirrorModal(false)}
+      />
+
+      {showDatePicker && (
+        <DateRangePicker
+          onSelect={(range) => {
+            setCustomRange(range);
+            setShowDatePicker(false);
+            handleSummary();
+          }}
+          onClose={() => setShowDatePicker(false)}
+        />
+      )}
     </div>
   );
 }
