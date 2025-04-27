@@ -62,8 +62,15 @@ export default function Header() {
     <Link href="/what" onClick={() => setMenuOpen(false)} className="text-white text-xl flex items-center gap-2 hover:text-purple-400 transition-all">
       🎁 What We Offer
     </Link>
-    <Link href="/blog" onClick={() => setMenuOpen(false)} className="text-white text-xl flex items-center gap-2 hover:text-purple-400 transition-all">
-      📝 Blog
+    <a
+  href="https://blog.zentrust.world/"
+  target="_blank"
+  rel="noopener noreferrer"
+  onClick={() => setMenuOpen(false)}
+  className="text-white text-xl flex items-center gap-2 hover:text-purple-400 transition-all"
+>
+  📝 Blog
+</a>
     </Link>
     <Link href="/contact" onClick={() => setMenuOpen(false)} className="text-white text-xl flex items-center gap-2 hover:text-purple-400 transition-all">
       📬 Contact
