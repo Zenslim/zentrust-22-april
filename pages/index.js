@@ -1,6 +1,20 @@
-import BeginJourneyButton from "@/components/BeginJourneyButton"
+import { useState, useEffect } from "react";
+import { missions, purposes } from "@/data/missionPurpose";
+import BeginJourneyButton from "@/components/BeginJourneyButton";
 
 export default function Home() {
+  const [missionIndex, setMissionIndex] = useState(0);
+  const [purposeIndex, setPurposeIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMissionIndex((prev) => (prev + 1) % missions.length);
+      setPurposeIndex((prev) => (prev + 1) % purposes.length);
+    }, 6000); // change every 6 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 py-12 space-y-8">
       <img
@@ -9,14 +23,19 @@ export default function Home() {
         className="h-12 md:h-16 w-auto"
       />
 
-      <h1 className="text-4xl sm:text-5xl font-extrabold text-center leading-tight max-w-4xl">
-        "What if the future grew from <span className='text-green-500'>trust</span> instead of fear?"
+      {/* Rotating Clear Mission */}
+      <h1 className="text-4xl sm:text-5xl font-extrabold text-center leading-tight max-w-4xl transition-all duration-1000">
+        "{missions[missionIndex]
+          .split("trust")
+          .join("<span class='text-green-500'>trust</span>")}"
       </h1>
 
-      <p className="text-center max-w-xl text-gray-300 text-lg">
-        ZenTrust is not a brand — it's a living movement. We regenerate land, soul, and systems through sacred technology, decentralization, and place-based healing.
+      {/* Rotating Core Purpose */}
+      <p className="text-center max-w-xl text-gray-300 text-lg transition-all duration-1000">
+        {purposes[purposeIndex]}
       </p>
 
+      {/* Buttons */}
       <div className="flex flex-wrap justify-center gap-4">
         <a href="/why" className="px-5 py-2 rounded-xl bg-white text-black font-medium flex items-center gap-2 hover:bg-gray-100 transition">
           🌱 Why We Exist
@@ -32,11 +51,13 @@ export default function Home() {
         </a>
       </div>
 
+      {/* Sacred Whisper */}
       <p className="text-center italic text-blue-200 mt-10">
         "Reclaiming trust in the soil, the soul, and the sacred web of life."
       </p>
 
+      {/* Begin Journey */}
       <BeginJourneyButton />
     </div>
-  )
+  );
 }
