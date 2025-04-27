@@ -1,16 +1,23 @@
 import { useState, useEffect } from "react";
 import { missions, purposes } from "@/data/missionPurpose";
 import BeginJourneyButton from "@/components/BeginJourneyButton";
+import styles from "@/styles/rotatingText.module.css"; // assuming you already created it
 
 export default function Home() {
   const [missionIndex, setMissionIndex] = useState(0);
   const [purposeIndex, setPurposeIndex] = useState(0);
+  const [fade, setFade] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setMissionIndex((prev) => (prev + 1) % missions.length);
-      setPurposeIndex((prev) => (prev + 1) % purposes.length);
-    }, 6000); // change every 6 seconds
+      setFade(true);
+
+      setTimeout(() => {
+        setMissionIndex((prev) => (prev + 1) % missions.length);
+        setPurposeIndex((prev) => (prev + 1) % purposes.length);
+        setFade(false);
+      }, 1000); // fade out duration
+    }, 6000); // total cycle every 6 seconds
 
     return () => clearInterval(interval);
   }, []);
@@ -24,19 +31,29 @@ export default function Home() {
       />
 
       {/* Rotating Clear Mission */}
-      <h1 className="text-4xl sm:text-5xl font-extrabold text-center leading-tight max-w-4xl transition-all duration-1000">
-        "{missions[missionIndex]
-          .split("trust")
-          .join("<span class='text-green-500'>trust</span>")}"
-      </h1>
+      <h1
+        className={`text-4xl sm:text-6xl font-extrabold text-center leading-tight max-w-5xl tracking-tight bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-clip-text text-transparent drop-shadow-lg transition-all duration-1000 ${styles.fadeText} ${
+          fade ? styles.fadeOut : ""
+        }`}
+        dangerouslySetInnerHTML={{
+          __html: `"${missions[missionIndex].replace(
+            /trust/g,
+            "<span class='text-green-400 font-bold animate-pulse'>trust</span>"
+          )}"`,
+        }}
+      />
 
       {/* Rotating Core Purpose */}
-      <p className="text-center max-w-xl text-gray-300 text-lg transition-all duration-1000">
+      <p
+        className={`text-center max-w-xl text-gray-300 text-lg transition-all duration-1000 ${styles.fadeText} ${
+          fade ? styles.fadeOut : ""
+        }`}
+      >
         {purposes[purposeIndex]}
       </p>
 
-      {/* Buttons */}
-      <div className="flex flex-wrap justify-center gap-4">
+      {/* Action Buttons */}
+      <div className="flex flex-wrap justify-center gap-4 mt-6">
         <a href="/why" className="px-5 py-2 rounded-xl bg-white text-black font-medium flex items-center gap-2 hover:bg-gray-100 transition">
           🌱 Why We Exist
         </a>
@@ -46,13 +63,18 @@ export default function Home() {
         <a href="/what" className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-medium flex items-center gap-2 hover:bg-emerald-700 transition">
           🌍 What We Offer
         </a>
-        <a href="https://blog.zentrust.world" target="_blank" rel="noopener noreferrer" className="px-5 py-2 rounded-xl bg-purple-600 text-white font-medium flex items-center gap-2 hover:bg-purple-700 transition">
+        <a
+          href="https://blog.zentrust.world"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-5 py-2 rounded-xl bg-purple-600 text-white font-medium flex items-center gap-2 hover:bg-purple-700 transition"
+        >
           ✍️ Read Blog
         </a>
       </div>
 
       {/* Sacred Whisper */}
-      <p className="text-center italic text-blue-200 mt-10">
+      <p className="text-center italic text-blue-200 mt-10 text-sm sm:text-base">
         "Reclaiming trust in the soil, the soul, and the sacred web of life."
       </p>
 
