@@ -12,25 +12,23 @@ useEffect(() => {
   const starsGeometry = new THREE.BufferGeometry()
   const starCount = 1500
   const positions = new Float32Array(starCount * 3)
-  const sizes = new Float32Array(starCount)
 
   for (let i = 0; i < starCount; i++) {
     positions[i * 3] = (Math.random() - 0.5) * 200
     positions[i * 3 + 1] = (Math.random() - 0.5) * 200
     positions[i * 3 + 2] = (Math.random() - 0.5) * 200
-    sizes[i] = Math.random() * 1.2 + 0.3
   }
 
   starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-  starsGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1))
 
   const starsMaterial = new THREE.PointsMaterial({
     map: starTexture,
-    size: 1.5,
+    size: 2.5, // Bigger size for better visibility
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     color: new THREE.Color(0xaaaaee),
+    sizeAttenuation: true, // ✅ Important to make it visible at different distances
   })
 
   const stars = new THREE.Points(starsGeometry, starsMaterial)
@@ -53,8 +51,8 @@ useEffect(() => {
 
   return () => {
     if (mountRef.current && renderer.domElement && mountRef.current.contains(renderer.domElement)) {
-      mountRef.current.removeChild(renderer.domElement);
+      mountRef.current.removeChild(renderer.domElement)
     }
-    window.removeEventListener('resize', handleResize);
-  } // ✅ Closing the return
-}, []) // ✅ Closing useEffect properly
+    window.removeEventListener('resize', handleResize)
+  }
+}, [])
