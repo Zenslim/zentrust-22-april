@@ -70,7 +70,7 @@ export default function ZenboardClient({ demoMode = false }) {
         </button>
       </div>
 
-      <div className="absolute top-3 right-4 text-right z-20">
+      <div className="absolute top-3 left-4 text-left z-20">
         <MoonSync />
       </div>
 
