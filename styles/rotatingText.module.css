@@ -1,0 +1,8 @@
+.fadeText {
+  transition: opacity 1s ease-in-out;
+  opacity: 1;
+}
+
+.fadeOut {
+  opacity: 0;
+}
