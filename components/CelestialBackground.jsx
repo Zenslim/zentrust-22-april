@@ -15,6 +15,8 @@ export default function CelestialBackground() {
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);
 
+    const starTexture = new THREE.TextureLoader().load('/textures/star-glow.png'); // ✅ loading the glow texture
+
     const starsGeometry = new THREE.BufferGeometry();
     const starCount = 1000;
     const positions = new Float32Array(starCount * 3);
@@ -26,9 +28,13 @@ export default function CelestialBackground() {
     starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const starsMaterial = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 1.0,
+      map: starTexture, // ✅ use the glow texture
+      size: 2.0, // ✅ bigger so the glow is visible
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
       sizeAttenuation: true,
+      color: new THREE.Color(0xddddff), // soft light blueish-white
     });
 
     const stars = new THREE.Points(starsGeometry, starsMaterial);
