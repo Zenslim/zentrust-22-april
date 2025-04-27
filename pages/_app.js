@@ -1,7 +1,7 @@
-// pages/_app.jsx
 import '../styles/globals.css'
 import { useEffect } from 'react'
 import { auth } from '../firebase'
+import Header from '@/components/Header'; // ✅ Add this
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
@@ -15,5 +15,10 @@ export default function App({ Component, pageProps }) {
     return () => unsubscribe()
   }, [])
 
-  return <Component {...pageProps} />
+  return (
+    <div className="relative min-h-screen w-full bg-black overflow-x-hidden">
+      <Header /> {/* ✅ Header floating always */}
+      <Component {...pageProps} />
+    </div>
+  )
 }
