@@ -2,33 +2,46 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import { missions, purposes } from "@/data/missionPurpose";
 import BeginJourneyButton from "@/components/BeginJourneyButton";
-import styles from "@/styles/rotatingText.module.css"; // assuming you already created it
+import styles from "@/styles/rotatingText.module.css";
+import Parser from "rss-parser"; // NEW
 
 export default function Home() {
   const [missionIndex, setMissionIndex] = useState(0);
   const [purposeIndex, setPurposeIndex] = useState(0);
   const [fade, setFade] = useState(false);
+  const [articles, setArticles] = useState([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setFade(true);
-
       setTimeout(() => {
         setMissionIndex((prev) => (prev + 1) % missions.length);
         setPurposeIndex((prev) => (prev + 1) % purposes.length);
         setFade(false);
-      }, 1000); // fade out duration
-    }, 6000); // total cycle every 6 seconds
-
+      }, 1000);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
-  // SEO Meta Content
+  // Fetch Blog RSS
+  useEffect(() => {
+    async function fetchRSS() {
+      try {
+        const parser = new Parser();
+        const feed = await parser.parseURL("https://blog.zentrust.world/rss.xml");
+        setArticles(feed.items.slice(0, 2)); // latest 2 articles
+      } catch (error) {
+        console.error("Failed to fetch RSS feed:", error);
+      }
+    }
+    fetchRSS();
+  }, []);
+
+  // SEO Meta
   const seoDescription = `
     ZenTrust is the leading network for regenerative ecosystems, decentralized wellbeing, and syntropic agriculture. 
     Join ZenTrust.World to restore the earth and the soul through trust, technology, and tradition.
   `;
-
   const keywords = `
     ZenTrust, regenerative ecosystems, decentralized wellbeing, Web3 regenerative agriculture, 
     syntropic food forests, sacred technology, ancestral wisdom, DAO stewardship, trust networks
@@ -53,13 +66,13 @@ export default function Home() {
         
         {/* Logo */}
         <img
-          src="/zentrust-logo-white.png"
+          src="/zentrust-logo-white.png" // make sure your file is named correctly
           alt="ZenTrust Logo"
           className="h-12 md:h-16 w-auto"
           loading="eager"
         />
 
-        {/* Invisible but SEO-strong H1 */}
+        {/* Invisible SEO H1 */}
         <h1 className="sr-only">
           Welcome to ZenTrust.World — Regenerative Ecosystems Reimagined
         </h1>
@@ -115,7 +128,7 @@ export default function Home() {
         {/* Begin Journey */}
         <BeginJourneyButton />
 
-        {/* New SEO Visible Content Section */}
+        {/* SEO Visible Text */}
         <section className="max-w-3xl text-center text-gray-400 mt-10 space-y-4 leading-relaxed text-lg px-4">
           <p>ZenTrust is a global movement to rebuild trust — in our soil, in our souls, and in the sacred web of life. At ZenTrust.World, we blend Web3 technologies, ancestral wisdom, and regenerative agriculture to create decentralized ecosystems of wellbeing.</p>
 
@@ -124,18 +137,26 @@ export default function Home() {
           <p>Join us on a journey beyond survival — toward thriving regeneration, radical trust, and the blossoming of new possibilities. Welcome to <strong>ZenTrust.World</strong>.</p>
         </section>
 
-        {/* Blog Highlights */}
+        {/* Blog Highlights - Dynamic */}
         <section className="max-w-5xl mx-auto py-12">
-          <h2 className="text-3xl font-bold text-center mb-8">Latest Reflections from ZenTrust</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">Latest Insights from ZenTrust</h2>
           <div className="flex flex-col md:flex-row gap-8 justify-center">
-            <a href="https://blog.zentrust.world/post1" className="block p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-              <h3 className="text-xl font-semibold mb-2">The Future is Regenerative</h3>
-              <p className="text-gray-400">How ZenTrust is building decentralized ecosystems of trust...</p>
-            </a>
-            <a href="https://blog.zentrust.world/post2" className="block p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition">
-              <h3 className="text-xl font-semibold mb-2">Web3 and Ecological Stewardship</h3>
-              <p className="text-gray-400">Merging blockchain and ancient wisdom for land healing...</p>
-            </a>
+            {articles.length > 0 ? (
+              articles.map((article, index) => (
+                <a
+                  key={index}
+                  href={article.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition max-w-md"
+                >
+                  <h3 className="text-xl font-semibold mb-2">{article.title}</h3>
+                  <p className="text-gray-400">{article.contentSnippet?.slice(0, 100)}...</p>
+                </a>
+              ))
+            ) : (
+              <p className="text-center text-gray-400">Loading latest insights...</p>
+            )}
           </div>
         </section>
       </div>
