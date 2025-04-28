@@ -59,8 +59,8 @@ export default function Home() {
           loading="eager"
         />
 
-        {/* Strong visible H1 */}
-        <h1 className="text-5xl sm:text-7xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-300 via-blue-500 to-purple-600">
+        {/* Invisible but SEO-strong H1 */}
+        <h1 className="sr-only">
           Welcome to ZenTrust.World — Regenerative Ecosystems Reimagined
         </h1>
 
