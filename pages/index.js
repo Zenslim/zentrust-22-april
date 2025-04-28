@@ -3,13 +3,34 @@ import Head from "next/head";
 import { missions, purposes } from "@/data/missionPurpose";
 import BeginJourneyButton from "@/components/BeginJourneyButton";
 import styles from "@/styles/rotatingText.module.css";
-import Parser from "rss-parser"; // NEW
 
-export default function Home() {
+export async function getStaticProps() {
+  const feedUrl = "https://blog.zentrust.world/rss.xml";
+
+  const res = await fetch(feedUrl);
+  const text = await res.text();
+  
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, "application/xml");
+
+  const items = Array.from(doc.querySelectorAll("item")).slice(0, 2).map(item => ({
+    title: item.querySelector("title")?.textContent || "",
+    link: item.querySelector("link")?.textContent || "",
+    description: item.querySelector("description")?.textContent || "",
+  }));
+
+  return {
+    props: {
+      articles: items,
+    },
+    revalidate: 3600, // re-build every 1 hour
+  };
+}
+
+export default function Home({ articles }) {
   const [missionIndex, setMissionIndex] = useState(0);
   const [purposeIndex, setPurposeIndex] = useState(0);
   const [fade, setFade] = useState(false);
-  const [articles, setArticles] = useState([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -23,21 +44,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch Blog RSS
-  useEffect(() => {
-    async function fetchRSS() {
-      try {
-        const parser = new Parser();
-        const feed = await parser.parseURL("https://blog.zentrust.world/rss.xml");
-        setArticles(feed.items.slice(0, 2)); // latest 2 articles
-      } catch (error) {
-        console.error("Failed to fetch RSS feed:", error);
-      }
-    }
-    fetchRSS();
-  }, []);
-
-  // SEO Meta
   const seoDescription = `
     ZenTrust is the leading network for regenerative ecosystems, decentralized wellbeing, and syntropic agriculture. 
     Join ZenTrust.World to restore the earth and the soul through trust, technology, and tradition.
@@ -66,18 +72,18 @@ export default function Home() {
         
         {/* Logo */}
         <img
-          src="/zentrust-logo-white.png" // make sure your file is named correctly
+          src="/zentrust-logo-white.png"
           alt="ZenTrust Logo"
           className="h-12 md:h-16 w-auto"
           loading="eager"
         />
 
-        {/* Invisible SEO H1 */}
+        {/* Invisible H1 */}
         <h1 className="sr-only">
           Welcome to ZenTrust.World — Regenerative Ecosystems Reimagined
         </h1>
 
-        {/* Rotating Clear Mission */}
+        {/* Rotating Mission */}
         <h2
           className={`text-4xl sm:text-6xl font-extrabold text-center leading-tight max-w-5xl tracking-tight bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-clip-text text-transparent drop-shadow-lg transition-all duration-1000 ${styles.fadeText} ${
             fade ? styles.fadeOut : ""
@@ -90,7 +96,7 @@ export default function Home() {
           }}
         />
 
-        {/* Rotating Core Purpose */}
+        {/* Rotating Purpose */}
         <p
           className={`text-center max-w-xl text-gray-300 text-lg transition-all duration-1000 ${styles.fadeText} ${
             fade ? styles.fadeOut : ""
@@ -125,7 +131,6 @@ export default function Home() {
           "Reclaiming trust in the soil, the soul, and the sacred web of life."
         </p>
 
-        {/* Begin Journey */}
         <BeginJourneyButton />
 
         {/* SEO Visible Text */}
@@ -137,7 +142,7 @@ export default function Home() {
           <p>Join us on a journey beyond survival — toward thriving regeneration, radical trust, and the blossoming of new possibilities. Welcome to <strong>ZenTrust.World</strong>.</p>
         </section>
 
-        {/* Blog Highlights - Dynamic */}
+        {/* Blog Highlights */}
         <section className="max-w-5xl mx-auto py-12">
           <h2 className="text-3xl font-bold text-center mb-8">Latest Insights from ZenTrust</h2>
           <div className="flex flex-col md:flex-row gap-8 justify-center">
@@ -151,7 +156,7 @@ export default function Home() {
                   className="block p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition max-w-md"
                 >
                   <h3 className="text-xl font-semibold mb-2">{article.title}</h3>
-                  <p className="text-gray-400">{article.contentSnippet?.slice(0, 100)}...</p>
+                  <p className="text-gray-400">{article.description?.slice(0, 100)}...</p>
                 </a>
               ))
             ) : (
