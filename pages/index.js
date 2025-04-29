@@ -3,7 +3,7 @@ import Head from "next/head";
 import { missions, purposes } from "@/data/missionPurpose";
 import BeginJourneyButton from "@/components/BeginJourneyButton";
 import styles from "@/styles/rotatingText.module.css";
-import { parseStringPromise } from "xml2js"; // 🔥 Added this
+import { parseStringPromise } from "xml2js"; // Server-safe XML parser
 
 export async function getStaticProps() {
   const feedUrl = "https://blog.zentrust.world/rss.xml";
@@ -66,6 +66,38 @@ export default function Home({ articles }) {
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://zentrust.world/social-preview.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
+        
+        {/* Organization JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "ZenTrust",
+              "alternateName": "ZenTrust.World",
+              "url": "https://zentrust.world",
+              "logo": "https://zentrust.world/zentrust-logo-white.png",
+              "description": "ZenTrust is a regenerative ecosystem network blending Web3, syntropic agriculture, and ancestral wisdom to rebuild trust in soil, soul, and society.",
+              "sameAs": [
+                "https://blog.zentrust.world",
+                "https://zentrust.world/why",
+                "https://zentrust.world/how",
+                "https://zentrust.world/what"
+              ],
+              "foundingDate": "2025",
+              "founders": [{
+                "@type": "Person",
+                "name": "Nilona Maskey"
+              }],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "Customer Support",
+                "email": "hello@zentrust.world"
+              }
+            })
+          }}
+        />
       </Head>
 
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 py-12 space-y-8">
@@ -73,7 +105,7 @@ export default function Home({ articles }) {
         {/* Logo */}
         <img
           src="/zentrust-logo-white.png"
-          alt="ZenTrust Logo"
+          alt="ZenTrust | Regenerative Trust Network Logo"
           className="h-12 md:h-16 w-auto"
           loading="eager"
         />
@@ -122,7 +154,7 @@ export default function Home({ articles }) {
             rel="noopener noreferrer"
             className="px-5 py-2 rounded-xl bg-purple-600 text-white font-medium flex items-center gap-2 hover:bg-purple-700 transition"
           >
-            ✍️ Read Blog
+           🌿 Our Insights
           </a>
         </div>
 
@@ -139,7 +171,7 @@ export default function Home({ articles }) {
 
           <p>We believe the future of governance, health, and land stewardship is community-driven and rooted in nature's intelligence. Through syntropic food forests, decentralized autonomous organizations (DAOs), and sacred technology, ZenTrust pioneers a new civilization based on cooperation, not extraction.</p>
 
-          <p>Join us on a journey beyond survival — toward thriving regeneration, radical trust, and the blossoming of new possibilities. Welcome to <strong>ZenTrust.World</strong>.</p>
+          <p>Join ZenTrust on a journey beyond survival — toward thriving regeneration, radical trust, and the blossoming of new possibilities. Welcome to <strong>ZenTrust.World</strong>.</p>
         </section>
 
         {/* Blog Highlights */}
