@@ -3,27 +3,27 @@ import Head from "next/head";
 import { missions, purposes } from "@/data/missionPurpose";
 import BeginJourneyButton from "@/components/BeginJourneyButton";
 import styles from "@/styles/rotatingText.module.css";
+import { parseStringPromise } from "xml2js"; // 🔥 Added this
 
 export async function getStaticProps() {
   const feedUrl = "https://blog.zentrust.world/rss.xml";
 
   const res = await fetch(feedUrl);
   const text = await res.text();
-  
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(text, "application/xml");
 
-  const items = Array.from(doc.querySelectorAll("item")).slice(0, 2).map(item => ({
-    title: item.querySelector("title")?.textContent || "",
-    link: item.querySelector("link")?.textContent || "",
-    description: item.querySelector("description")?.textContent || "",
+  const rss = await parseStringPromise(text);
+  
+  const items = (rss.rss?.channel?.[0]?.item || []).slice(0, 2).map(item => ({
+    title: item.title?.[0] || "",
+    link: item.link?.[0] || "",
+    description: item.description?.[0] || "",
   }));
 
   return {
     props: {
       articles: items,
     },
-    revalidate: 3600, // re-build every 1 hour
+    revalidate: 3600, // rebuild every 1 hour
   };
 }
 
