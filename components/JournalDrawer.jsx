@@ -33,6 +33,16 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [customRange, setCustomRange] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // Stub handlers to prevent runtime crash
+  const handleEditSave = () => {
+    console.warn("handleEditSave not yet implemented.");
+  };
+
+  const handleDelete = () => {
+    console.warn("handleDelete not yet implemented.");
+  };
+
+
   useEffect(() => {
     if (open) {
       setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
