@@ -108,33 +108,52 @@ export default function Home({ articles }) {
         {/* Invisible H1 */}
         <h1 className="sr-only">Welcome to ZenTrust.World — Regenerative Ecosystems Reimagined</h1>
 
-        {/* Mission + Purpose Manual Navigation */}
-        <div className="flex flex-col items-center space-y-6">
-          <div {...missionSwipeHandlers} className="flex items-center space-x-4 max-w-5xl px-4">
-            <button onClick={() => setMissionIndex((prev) => (prev - 1 + missions.length) % missions.length)}
-              className="text-white text-2xl hover:text-emerald-300 transition">◀</button>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-center flex-1 leading-tight tracking-tight bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 bg-clip-text text-transparent drop-shadow-lg"
-              dangerouslySetInnerHTML={{
-                __html: `"${missions[missionIndex].replace(
-                  /trust/g,
-                  "<span class='text-green-400 font-bold animate-pulse'>trust</span>"
-                )}"`,
-              }}
-            />
-            <button onClick={() => setMissionIndex((prev) => (prev + 1) % missions.length)}
-              className="text-white text-2xl hover:text-emerald-300 transition">▶</button>
-          </div>
+       {/* Thought Card Slider */}
+<div className="w-full max-w-xl mx-auto text-center space-y-6">
+  <div
+    {...useSwipeable({
+      onSwipedLeft: () => {
+        setMissionIndex((prev) => (prev + 1) % missions.length);
+        setPurposeIndex((prev) => (prev + 1) % purposes.length);
+      },
+      onSwipedRight: () => {
+        setMissionIndex((prev) => (prev - 1 + missions.length) % missions.length);
+        setPurposeIndex((prev) => (prev - 1 + purposes.length) % purposes.length);
+      },
+      trackMouse: true,
+    })}
+    className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl shadow-xl"
+  >
+    <h2
+      className="text-2xl sm:text-3xl font-semibold text-transparent bg-gradient-to-r from-green-300 via-blue-500 to-purple-500 bg-clip-text"
+      dangerouslySetInnerHTML={{
+        __html: `"${missions[missionIndex].replace(
+          /trust/g,
+          "<span class='text-green-400 font-bold animate-pulse'>trust</span>"
+        )}"`,
+      }}
+    />
+    <p className="mt-4 text-gray-300 text-base italic">
+      {purposes[purposeIndex]}
+    </p>
+  </div>
 
-          <div {...purposeSwipeHandlers} className="flex items-center space-x-4 max-w-xl px-4">
-            <button onClick={() => setPurposeIndex((prev) => (prev - 1 + purposes.length) % purposes.length)}
-              className="text-white text-lg hover:text-purple-300 transition">◀</button>
-            <p className="text-center text-gray-300 text-lg flex-1">
-              {purposes[purposeIndex]}
-            </p>
-            <button onClick={() => setPurposeIndex((prev) => (prev + 1) % purposes.length)}
-              className="text-white text-lg hover:text-purple-300 transition">▶</button>
-          </div>
-        </div>
+  {/* Dot Indicators */}
+  <div className="flex justify-center gap-2">
+    {missions.map((_, i) => (
+      <button
+        key={i}
+        onClick={() => {
+          setMissionIndex(i);
+          setPurposeIndex(i);
+        }}
+        className={`w-3 h-3 rounded-full transition ${
+          i === missionIndex ? "bg-white scale-110" : "bg-gray-500 opacity-50"
+        }`}
+      />
+    ))}
+  </div>
+</div>
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mt-6">
