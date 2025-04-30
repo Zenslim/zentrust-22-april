@@ -37,6 +37,15 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [customRange, setCustomRange] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // Temporary fix to prevent runtime crash
+  const handleEditSave = () => {
+    console.warn("handleEditSave not implemented.");
+  };
+
+  const handleDelete = () => {
+    console.warn("handleDelete not implemented.");
+  };
+
   useEffect(() => {
   if (!uid) return; // Prevent Firestore call when uid is undefined
 
