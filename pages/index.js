@@ -108,7 +108,7 @@ export default function Home({ articles }) {
         {/* Invisible H1 */}
         <h1 className="sr-only">Welcome to ZenTrust.World — Regenerative Ecosystems Reimagined</h1>
 
-       {/* Thought Card Slider */}
+      {/* Refined Quote Slider */}
 <div className="w-full max-w-xl mx-auto text-center space-y-6">
   <div
     {...useSwipeable({
@@ -122,7 +122,7 @@ export default function Home({ articles }) {
       },
       trackMouse: true,
     })}
-    className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl shadow-xl"
+    className="space-y-4"
   >
     <h2
       className="text-2xl sm:text-3xl font-semibold text-transparent bg-gradient-to-r from-green-300 via-blue-500 to-purple-500 bg-clip-text"
@@ -133,13 +133,13 @@ export default function Home({ articles }) {
         )}"`,
       }}
     />
-    <p className="mt-4 text-gray-300 text-base italic">
+    <p className="text-gray-400 text-sm italic">
       {purposes[purposeIndex]}
     </p>
   </div>
 
-  {/* Dot Indicators */}
-  <div className="flex justify-center gap-2">
+  {/* Dots - Zen style */}
+  <div className="flex justify-center gap-1 mt-2">
     {missions.map((_, i) => (
       <button
         key={i}
@@ -147,14 +147,15 @@ export default function Home({ articles }) {
           setMissionIndex(i);
           setPurposeIndex(i);
         }}
-        className={`w-3 h-3 rounded-full transition ${
-          i === missionIndex ? "bg-white scale-110" : "bg-gray-500 opacity-50"
+        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+          i === missionIndex
+            ? "bg-white scale-110 shadow-md"
+            : "bg-gray-500 opacity-40"
         }`}
       />
     ))}
   </div>
 </div>
-
         {/* CTA Buttons */}
         <div className="flex flex-wrap justify-center gap-4 mt-6">
           <a href="/why" className="px-5 py-2 rounded-xl bg-white text-black font-medium flex items-center gap-2 hover:bg-gray-100 transition">
