@@ -53,7 +53,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
       fetchEntries();
     }
-  }, [open]);
+  }, [open, uid]);
 
   useEffect(() => {
   if (!uid) return; // Prevent Firestore call when uid is undefined
@@ -62,7 +62,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
       setSaveLabel(CTA_LABELS[Math.floor(Math.random() * CTA_LABELS.length)]);
     }, 6000);
     return () => clearInterval(labelInterval);
-  }, []);
+  }, [uid]);
 
   const fetchEntries = async () => {
     if (!user?.uid) return;
