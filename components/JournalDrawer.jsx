@@ -15,6 +15,10 @@ import { PROMPTS, CTA_LABELS } from '@/data/journalConstants';
 import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
 export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
+  if (!uid) {
+    return <div className="text-white p-4">Loading reflections...</div>;
+  }
+
   const user = useUserData();
   const [note, setNote] = useState('');
   const [entries, setEntries] = useState([]);
@@ -34,6 +38,8 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
+  if (!uid) return; // Prevent Firestore call when uid is undefined
+
     if (open) {
       setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
       fetchEntries();
@@ -41,6 +47,8 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   }, [open]);
 
   useEffect(() => {
+  if (!uid) return; // Prevent Firestore call when uid is undefined
+
     const labelInterval = setInterval(() => {
       setSaveLabel(CTA_LABELS[Math.floor(Math.random() * CTA_LABELS.length)]);
     }, 6000);
