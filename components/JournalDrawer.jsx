@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import {
   collection, addDoc, getDocs, orderBy, query, serverTimestamp,
-  updateDoc, deleteDoc, doc, getDoc, setDoc
+  updateDoc, deleteDoc, doc
 } from 'firebase/firestore';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useUserData } from '@/hooks/useUserData';
@@ -14,7 +15,7 @@ import DateRangePicker from '@/components/DateRangePicker';
 import { PROMPTS, CTA_LABELS } from '@/data/journalConstants';
 import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
-export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
+export default function JournalDrawer({ open, onClose, onNewEntry }) {
   const user = useUserData();
   const [note, setNote] = useState('');
   const [entries, setEntries] = useState([]);
@@ -33,15 +34,29 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [customRange, setCustomRange] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Stub handlers to prevent runtime crash
-  const handleEditSave = () => {
-    console.warn("handleEditSave not yet implemented.");
+  const handleEditSave = async (entryId, newNote) => {
+    if (!user?.uid || !entryId || !newNote.trim()) return;
+    try {
+      const entryRef = doc(db, 'users', user.uid, 'journal', entryId);
+      await updateDoc(entryRef, { note: newNote });
+      setEditingId(null);
+      setEditNote('');
+      fetchEntries();
+    } catch (err) {
+      console.error("Error updating reflection:", err);
+    }
   };
 
-  const handleDelete = () => {
-    console.warn("handleDelete not yet implemented.");
+  const handleDelete = async (entryId) => {
+    if (!user?.uid || !entryId) return;
+    try {
+      await deleteDoc(doc(db, 'users', user.uid, 'journal', entryId));
+      setLastDeleted(entryId);
+      fetchEntries();
+    } catch (err) {
+      console.error("Error deleting reflection:", err);
+    }
   };
-
 
   useEffect(() => {
     if (open) {
@@ -204,33 +219,27 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
           📜 Your Echoes ({entries.length})
         </button>
       </div>
-{showAll && entries.length > 0 && (
-  <div className="space-y-4 border-t border-zinc-700 pt-4">
-    {entries.filter(entry =>
-      entry &&
-      typeof entry === 'object' &&
-      typeof entry.note === 'string' &&
-      entry.timestamp &&
-      (typeof entry.timestamp.toDate === 'function' || entry.timestamp.seconds) &&
-      entry.id
-    ).map((entry) => (
-      <ReflectionEntry
-        key={entry.id}
-        entry={entry}
-        editingId={editingId}
-        editNote={editNote}
-        setEditNote={setEditNote}
-        setEditingId={setEditingId}
-        handleEditSave={handleEditSave}
-        handleDelete={handleDelete}
-      />
-    ))}
-  </div>
-)}
 
-       {lastDeleted && (
+      {showAll && entries.length > 0 && (
+        <div className="space-y-4 border-t border-zinc-700 pt-4">
+          {entries.map((entry) => (
+            <ReflectionEntry
+              key={entry.id}
+              entry={entry}
+              editingId={editingId}
+              editNote={editNote}
+              setEditNote={setEditNote}
+              setEditingId={setEditingId}
+              handleEditSave={handleEditSave}
+              handleDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
+
+      {lastDeleted && (
         <div className="text-center mt-4">
-          <button onClick={handleUndo} className="text-yellow-400">Undo Last Delete</button>
+          <button onClick={fetchEntries} className="text-yellow-400">Refresh</button>
         </div>
       )}
 
