@@ -63,36 +63,37 @@ export default function Home({ articles }) {
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://zentrust.world/social-preview.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "ZenTrust",
-              "alternateName": "ZenTrust.World",
-              "url": "https://zentrust.world",
-              "logo": "https://zentrust.world/zentrust-logo-white.png",
-              "description": "ZenTrust is a regenerative ecosystem network blending Web3, syntropic agriculture, and ancestral wisdom to rebuild trust in soil, soul, and society.",
-              "sameAs": [
-                "https://blog.zentrust.world",
-                "https://zentrust.world/why",
-                "https://zentrust.world/how",
-                "https://zentrust.world/what"
-              ],
-              "foundingDate": "2025",
-              "founders": [{
-                "@type": "Person",
-                "name": "Nilona Maskey"
-              }],
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "contactType": "Customer Support",
-                "email": "hello@zentrust.world"
-              }
-            })
-          }}
-        />
+        
+    <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "ZenTrust",
+      "alternateName": "ZenTrust.World",
+      "url": "https://zentrust.world",
+      "logo": "https://zentrust.world/zentrust-logo-white.png",
+      "description": "ZenTrust is a regenerative ecosystem network blending Web3, syntropic agriculture, and ancestral wisdom to rebuild trust in soil, soul, and society.",
+      "sameAs": [
+        "https://blog.zentrust.world",
+        "https://zentrust.world/why",
+        "https://zentrust.world/how",
+        "https://zentrust.world/what"
+      ],
+      "foundingDate": "2025",
+      "founders": [{
+        "@type": "Person",
+        "name": "Nilona Maskey"
+      }],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "Customer Support",
+        "email": "hello@zentrust.world"
+      }
+    }),
+  }}
+/>
       </Head>
 
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 py-12 space-y-8">
