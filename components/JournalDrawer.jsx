@@ -19,7 +19,7 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
     return <div className="text-white p-4">Loading reflections...</div>;
   }
 
-  const user = useUserData();
+  const user = { uid };
   const [note, setNote] = useState('');
   const [entries, setEntries] = useState([]);
   const [reflectionCount, setReflectionCount] = useState(0);
