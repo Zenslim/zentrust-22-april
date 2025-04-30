@@ -77,10 +77,10 @@ export default function ZenboardClient({ demoMode = false }) {
       <JournalDrawer
         open={isJournalOpen}
         onClose={() => setIsJournalOpen(false)}
-        uid=""
+        
         onNewEntry={handleNewEntry}
       />
-      <TimelineDrawer open={isTimelineOpen} onClose={() => setIsTimelineOpen(false)} uid="" />
+      <TimelineDrawer open={isTimelineOpen} onClose={() => setIsTimelineOpen(false)}  />
       <TimelineButton visible={entryCount >= 3} onClick={() => setIsTimelineOpen(true)} />
 
       <GlowAudio triggerWhisper={triggerWhisper} />

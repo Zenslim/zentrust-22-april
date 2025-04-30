@@ -15,11 +15,7 @@ import { PROMPTS, CTA_LABELS } from '@/data/journalConstants';
 import { getReflectionSummary } from '@/utils/getReflectionSummary';
 
 export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
-  if (!uid) {
-    return <div className="text-white p-4">Loading reflections...</div>;
-  }
-
-  const user = { uid };
+  const user = useUserData();
   const [note, setNote] = useState('');
   const [entries, setEntries] = useState([]);
   const [reflectionCount, setReflectionCount] = useState(0);
@@ -37,32 +33,19 @@ export default function JournalDrawer({ open, onClose, onNewEntry, uid }) {
   const [customRange, setCustomRange] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Temporary fix to prevent runtime crash
-  const handleEditSave = () => {
-    console.warn("handleEditSave not implemented.");
-  };
-
-  const handleDelete = () => {
-    console.warn("handleDelete not implemented.");
-  };
-
   useEffect(() => {
-  if (!uid) return; // Prevent Firestore call when uid is undefined
-
     if (open) {
       setPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
       fetchEntries();
     }
-  }, [open, uid]);
+  }, [open]);
 
   useEffect(() => {
-  if (!uid) return; // Prevent Firestore call when uid is undefined
-
     const labelInterval = setInterval(() => {
       setSaveLabel(CTA_LABELS[Math.floor(Math.random() * CTA_LABELS.length)]);
     }, 6000);
     return () => clearInterval(labelInterval);
-  }, [uid]);
+  }, []);
 
   const fetchEntries = async () => {
     if (!user?.uid) return;
