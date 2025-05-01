@@ -86,11 +86,11 @@ export default function ZenboardClient() {
         </div>
       </div>
 
-      <MirrorSummaryDrawer
-        summary={response?.content
-        isOpen={showSummary}
-        onClose={() => setShowSummary(false)}
-      />
+     <MirrorSummaryDrawer
+  summary={response?.content}
+  isOpen={showSummary}
+  onClose={() => setShowSummary(false)}
+/>
     </div>
   );
 }
