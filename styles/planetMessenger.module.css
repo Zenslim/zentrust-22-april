@@ -1,13 +1,13 @@
 
 .planetContainer {
   text-align: center;
-  animation: fadeInOut 7s infinite;
+  animation: fadeInOut 1.5s ease-out forwards;
 }
 
 .planet {
   font-size: 4rem;
   transform: scale(0);
-  animation: zoomFade 7s infinite;
+  animation: zoomFade 1.5s ease-out forwards;
 }
 
 .message {
