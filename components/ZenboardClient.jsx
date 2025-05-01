@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import PlanetMessenger from '@/components/PlanetMessengerV2';
 import FloatingPrompt from '@/components/FloatingPrompt';
 import CelestialBackground from '@/components/CelestialBackground';
 import MirrorSummary from '@/components/MirrorSummary';
