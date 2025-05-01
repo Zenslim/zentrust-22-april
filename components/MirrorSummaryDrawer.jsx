@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -13,18 +15,16 @@ export default function MirrorSummaryDrawer({ summary, isOpen, onClose }) {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-zinc-900 text-white w-full max-w-md md:max-w-lg max-h-[80vh] rounded-lg shadow-lg flex flex-col p-6"
+            className="bg-zinc-900 text-white w-full max-w-md md:max-w-lg h-[80%] rounded-lg shadow-lg flex flex-col p-6"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <h2 className="text-xl font-semibold mb-4">🪞 Mirror Summary</h2>
-
-            <div className="flex-1 overflow-y-auto text-sm leading-relaxed pr-1 prose prose-invert prose-sm max-w-none">
-              <ReactMarkdown>{summary}</ReactMarkdown>
+            <h2 className="text-xl font-semibold mb-2">🪞 Mirror Summary</h2>
+            <div className="flex-1 overflow-y-auto text-sm whitespace-pre-wrap leading-relaxed pr-1 prose prose-invert">
+              <ReactMarkdown>{summary || '_No summary available yet._'}</ReactMarkdown>
             </div>
-
             <div className="mt-4 flex justify-between gap-2">
               <button
                 onClick={onClose}
