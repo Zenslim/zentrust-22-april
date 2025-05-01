@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/planetMessenger.module.css';
@@ -117,7 +116,7 @@ export default function PlanetMessengerV3({ onPromptChange, reflectionSubmitted 
           className="object-contain drop-shadow-xl"
         />
       </div>
-      <p className={`${styles.message} ${visible ? 'opacity-100' : 'opacity-0'}`}>
+      <p className={`${styles.planetEnter} text-white text-lg sm:text-xl text-center max-w-md`}>
         {prompt}
       </p>
     </div>
