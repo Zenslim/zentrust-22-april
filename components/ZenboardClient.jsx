@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import PlanetMessenger from '@/components/PlanetMessengerV2';
+import PlanetMessenger from '@/components/PlanetMessengerV3';
 import CelestialBackground from '@/components/CelestialBackground';
 import MirrorSummary from '@/components/MirrorSummary';
 import VoiceToText from '@/components/VoiceToText';
