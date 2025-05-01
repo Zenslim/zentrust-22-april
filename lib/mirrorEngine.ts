@@ -1,93 +1,46 @@
 
-// mirrorEngine.ts — AI Soul Mirror Engine with OpenRouter summary
-
-import { getReflectionSummary } from './openrouter';
-
-type ReflectionInput = {
-  text: string;
-  imageMeta?: { name: string; data: string };
-  timestamp: number;
-  userId: string;
-  celestialPrompt: string;
-};
-
-type MirrorOutput = {
-  mirrorReply: string;
-  bpss: 'bio' | 'psycho' | 'social' | 'spiritual';
-  archetype: string;
-  showReciprocity: boolean;
-  userTitle?: string;
-  mythicWhisper?: string;
-  threadId?: string;
-};
-
-const archetypes = ['moon', 'mars', 'pluto', 'saturn', 'jupiter', 'earth', 'populated'];
-
-const whispers = [
-  "Even silence carries your becoming.",
-  "The stars heard you. And they remember.",
-  "What you release returns as light.",
-  "The universe is always listening.",
-  "You are already arriving.",
-  "The path forms with your presence.",
-  "All truths begin in stillness."
-];
-
-function detectBPSS(text: string): MirrorOutput['bpss'] {
-  const lower = text.toLowerCase();
-  if (/body|sleep|eat|energy/.test(lower)) return 'bio';
-  if (/feel|mind|anxiety|thought|inner/.test(lower)) return 'psycho';
-  if (/family|community|others|trust/.test(lower)) return 'social';
-  if (/soul|meaning|spirit|god|universe/.test(lower)) return 'spiritual';
-  return 'psycho';
-}
-
-function mapArchetype(text: string, timestamp: number): string {
-  const hash = [...text].reduce((acc, c) => acc + c.charCodeAt(0), timestamp);
-  return archetypes[hash % archetypes.length];
-}
-
-function generateThreadId(userId: string, timestamp: number): string {
-  return `thread-${userId}-${Math.floor(timestamp / 86400000)}`;
-}
-
-function getRandomWhisper(): string {
-  return whispers[Math.floor(Math.random() * whispers.length)];
-}
-
-function fallbackSummary(text: string, bpss: string, archetype: string): string {
-  const summaryTemplates = {
-    bio: "Your body carries wisdom it wants you to trust.",
-    psycho: "Your mind is reflecting deeply — clarity will follow.",
-    social: "This desire for connection is sacred.",
-    spiritual: "You are opening to a truth that transcends language."
+export async function generateMirrorSummary({ text, imageMeta, timestamp, userId, celestialPrompt }) {
+  const headers = {
+    'Authorization': \`Bearer \${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}\`,
+    'Content-Type': 'application/json',
   };
-  const base = summaryTemplates[bpss] || "Something inside you is awakening.";
-  return `${base} The ${archetype} archetype walks with you.`;
-}
 
-export async function generateMirrorSummary(input: ReflectionInput): Promise<MirrorOutput> {
-  const bpss = detectBPSS(input.text);
-  const archetype = mapArchetype(input.text, input.timestamp);
-  const threadId = generateThreadId(input.userId, input.timestamp);
+  const body = {
+    model: 'deepseek/deepseek-chat-v3-0324:free',
+    max_tokens: 500,
+    messages: [
+      {
+        role: 'system',
+        content: 'You summarize personal reflections with poetic warmth and deep clarity.',
+      },
+      {
+        role: 'user',
+        content: \`Reflection: "\${text}"\`,
+      },
+    ],
+  };
 
-  let mirrorReply = '';
   try {
-    mirrorReply = await getReflectionSummary(input.text);
-  } catch (err) {
-    console.warn('Falling back to offline summary:', err);
-    mirrorReply = fallbackSummary(input.text, bpss, archetype);
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const json = await response.json();
+    console.log('[🧠 OpenRouter RAW]', JSON.stringify(json, null, 2));
+
+    return {
+      mirrorReply: json.choices?.[0]?.message?.content || 'Summary unavailable.',
+      mythicWhisper: 'The path forms with your presence.',
+      userTitle: 'You are already arriving.',
+    };
+  } catch (error) {
+    console.error('OpenRouter summary error:', error);
+    return {
+      mirrorReply: 'Summary failed. Please try again.',
+      mythicWhisper: null,
+      userTitle: null,
+    };
   }
-
-  const showReciprocity = input.text.length > 100;
-
-  return {
-    mirrorReply,
-    bpss,
-    archetype,
-    showReciprocity,
-    userTitle: input.userId === 'anonymous' ? undefined : 'Seeker of Resonance',
-    mythicWhisper: Math.random() < 0.5 ? getRandomWhisper() : undefined,
-    threadId
-  };
 }
