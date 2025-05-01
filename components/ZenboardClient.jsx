@@ -87,7 +87,7 @@ export default function ZenboardClient() {
       </div>
 
       <MirrorSummaryDrawer
-        summary={response?.mirrorSummary}
+        summary={response?.content
         isOpen={showSummary}
         onClose={() => setShowSummary(false)}
       />
