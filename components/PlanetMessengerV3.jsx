@@ -110,13 +110,15 @@ export default function PlanetMessengerV3({ onPromptChange, reflectionSubmitted 
     <div className="flex flex-col items-center justify-center">
       <div className={`${visible ? styles.planetEnter : ''} flex flex-col items-center space-y-4`}>
         <div className="relative w-40 h-40 sm:w-56 sm:h-56">
-          <Image
-            src={planet.image}
-            alt={planet.name}
-            fill
-            priority
-            className="object-contain drop-shadow-xl"
-          />
+          <div className="relative w-full h-full spin-slow">
+            <Image
+              src={planet.image}
+              alt={planet.name}
+              fill
+              priority
+              className="object-contain drop-shadow-xl"
+            />
+          </div>
         </div>
         <p className="text-white text-lg sm:text-xl text-center max-w-md">
           {prompt}
