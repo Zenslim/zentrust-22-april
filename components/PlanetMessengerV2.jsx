@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import styles from './planetMessenger.module.css';
+import styles from '@/styles/planetMessenger.module.css';
 
 const planetPrompts = [
   {
