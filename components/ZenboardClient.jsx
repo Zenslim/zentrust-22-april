@@ -4,7 +4,6 @@
 import { useEffect, useState, useRef } from 'react';
 import PlanetMessenger from '@/components/PlanetMessengerV3';
 import CelestialBackground from '@/components/CelestialBackground';
-import MirrorSummary from '@/components/MirrorSummary';
 import VoiceToText from '@/components/VoiceToText';
 import ImageUpload from '@/components/ImageUpload';
 import { generateMirrorSummary } from '@/lib/mirrorEngine';
@@ -48,7 +47,18 @@ export default function ZenboardClient() {
       </div>
 
       <div className="absolute bottom-32 w-full flex flex-col items-center px-4 space-y-2">
-        {response && <MirrorSummary summary={response.mirrorReply} />}
+        {response && (
+          <div className="text-center space-y-2">
+            <p className="text-purple-300 italic text-lg">{response.mirrorReply}</p>
+            {response.mythicWhisper && (
+              <p className="text-sm text-gray-400">{response.mythicWhisper}</p>
+            )}
+            {response.userTitle && (
+              <p className="text-xs text-gray-500 mt-2">{response.userTitle}</p>
+            )}
+          </div>
+        )}
+
         <textarea
           ref={inputRef}
           value={reflection}
