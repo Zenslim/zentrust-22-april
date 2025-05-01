@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -6,6 +5,7 @@ import PlanetMessenger from '@/components/PlanetMessengerV3';
 import CelestialBackground from '@/components/CelestialBackground';
 import VoiceToText from '@/components/VoiceToText';
 import ImageUpload from '@/components/ImageUpload';
+import MirrorSummaryDrawer from '@/components/MirrorSummaryDrawer';
 import { generateMirrorSummary } from '@/lib/mirrorEngine';
 
 export default function ZenboardClient() {
@@ -14,6 +14,7 @@ export default function ZenboardClient() {
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
   const [currentPrompt, setCurrentPrompt] = useState('');
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const inputRef = useRef();
 
@@ -33,6 +34,7 @@ export default function ZenboardClient() {
     setReflection('');
     setImage(null);
     setLoading(false);
+    setDrawerOpen(true);
   };
 
   return (
@@ -79,10 +81,16 @@ export default function ZenboardClient() {
                 : 'bg-purple-700 hover:bg-purple-800'
             }`}
           >
-            {loading ? '✨ Generating your mirror...' : 'Send'}
+            {loading ? '✨ Generating your mirror…' : 'Send'}
           </button>
         </div>
       </div>
+
+      <MirrorSummaryDrawer
+        summary={response?.mirrorSummary || ''}
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
     </div>
   );
 }
