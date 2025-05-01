@@ -62,13 +62,14 @@ export default function ZenboardClient() {
           <VoiceToText onResult={setReflection} />
           <ImageUpload onUpload={setImage} />
           <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className={\`px-6 py-2 rounded-lg shadow text-white text-lg transition-all duration-300 \${loading ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-700 hover:bg-purple-800'}\`}
-          >
-            {loading ? '✨ Generating your mirror...' : 'Send'}
-          </button>
-        </div>
+  onClick={handleSubmit}
+  disabled={loading}
+  className={`px-6 py-2 rounded-lg shadow text-white text-lg transition-all duration-300 ${
+    loading ? 'bg-gray-600 cursor-not-allowed' : 'bg-purple-700 hover:bg-purple-800'
+  }`}
+>
+  {loading ? '✨ Generating your mirror...' : 'Send'}
+</button>
       </div>
 
       <MirrorSummaryDrawer
