@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -22,9 +20,15 @@ export default function MirrorSummaryDrawer({ summary, isOpen, onClose }) {
             transition={{ duration: 0.3 }}
           >
             <h2 className="text-xl font-semibold mb-2">🪞 Mirror Summary</h2>
-            <div className="flex-1 overflow-y-auto text-sm whitespace-pre-wrap leading-relaxed pr-1 prose prose-invert">
-              <ReactMarkdown>{summary || '_No summary available yet._'}</ReactMarkdown>
+
+            <div className="flex-1 overflow-y-auto text-sm whitespace-pre-wrap leading-relaxed pr-1">
+              {summary ? (
+                <ReactMarkdown>{summary}</ReactMarkdown>
+              ) : (
+                <p className="text-gray-400 italic">No summary available yet.</p>
+              )}
             </div>
+
             <div className="mt-4 flex justify-between gap-2">
               <button
                 onClick={onClose}
