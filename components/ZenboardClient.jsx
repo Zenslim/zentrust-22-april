@@ -3,7 +3,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import PlanetMessenger from '@/components/PlanetMessengerV2';
-import FloatingPrompt from '@/components/FloatingPrompt';
 import CelestialBackground from '@/components/CelestialBackground';
 import MirrorSummary from '@/components/MirrorSummary';
 import VoiceToText from '@/components/VoiceToText';
@@ -15,6 +14,7 @@ export default function ZenboardClient() {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
+  const [currentPrompt, setCurrentPrompt] = useState('');
 
   const inputRef = useRef();
 
@@ -36,30 +36,15 @@ export default function ZenboardClient() {
     setLoading(false);
   };
 
-  const [currentPrompt, setCurrentPrompt] = useState('');
-  const promptBank = [
-    "What dream have you abandoned?",
-    "Where does your soul feel most rooted?",
-    "What would courage do now?",
-    "Who are you beneath it all?",
-    "What boundary do you need to honor?",
-    "What fear is guarding your rebirth?"
-  ];
-
-  useEffect(() => {
-    setCurrentPrompt(promptBank[Math.floor(Math.random() * promptBank.length)]);
-    const interval = setInterval(() => {
-      setCurrentPrompt(promptBank[Math.floor(Math.random() * promptBank.length)]);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden text-white">
       <CelestialBackground />
 
-      <div className="absolute top-1/4 w-full text-center px-4 animate-fade-in">
-        <FloatingPrompt prompt={currentPrompt} />
+      <div className="absolute top-1/4 w-full flex justify-center px-4 animate-fade-in">
+        <PlanetMessenger
+          onPromptChange={setCurrentPrompt}
+          reflectionSubmitted={!!response}
+        />
       </div>
 
       <div className="absolute bottom-32 w-full flex flex-col items-center px-4 space-y-2">
