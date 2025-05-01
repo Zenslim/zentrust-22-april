@@ -1,5 +1,7 @@
 
-// mirrorEngine.ts — AI Soul Mirror Engine (Modular, BPSS-Aware)
+// mirrorEngine.ts — AI Soul Mirror Engine with OpenRouter summary
+
+import { getReflectionSummary } from './openrouter';
 
 type ReflectionInput = {
   text: string;
@@ -31,7 +33,6 @@ const whispers = [
   "All truths begin in stillness."
 ];
 
-// Simple keyword-based BPSS tone detection
 function detectBPSS(text: string): MirrorOutput['bpss'] {
   const lower = text.toLowerCase();
   if (/body|sleep|eat|energy/.test(lower)) return 'bio';
@@ -41,24 +42,20 @@ function detectBPSS(text: string): MirrorOutput['bpss'] {
   return 'psycho';
 }
 
-// Assign a planet archetype by hashing reflection + time
 function mapArchetype(text: string, timestamp: number): string {
   const hash = [...text].reduce((acc, c) => acc + c.charCodeAt(0), timestamp);
   return archetypes[hash % archetypes.length];
 }
 
-// Threading: use timestamp + userId for continuity
 function generateThreadId(userId: string, timestamp: number): string {
-  return `thread-${userId}-${Math.floor(timestamp / 86400000)}`; // 1-day threads
+  return `thread-${userId}-${Math.floor(timestamp / 86400000)}`;
 }
 
-// Whisper: occasional mythic echo
 function getRandomWhisper(): string {
   return whispers[Math.floor(Math.random() * whispers.length)];
 }
 
-// Summarize the reflection — placeholder for AI model integration
-function generateSummary(text: string, bpss: string, archetype: string): string {
+function fallbackSummary(text: string, bpss: string, archetype: string): string {
   const summaryTemplates = {
     bio: "Your body carries wisdom it wants you to trust.",
     psycho: "Your mind is reflecting deeply — clarity will follow.",
@@ -69,14 +66,20 @@ function generateSummary(text: string, bpss: string, archetype: string): string 
   return `${base} The ${archetype} archetype walks with you.`;
 }
 
-// Main function
 export async function generateMirrorSummary(input: ReflectionInput): Promise<MirrorOutput> {
   const bpss = detectBPSS(input.text);
   const archetype = mapArchetype(input.text, input.timestamp);
   const threadId = generateThreadId(input.userId, input.timestamp);
 
-  const mirrorReply = generateSummary(input.text, bpss, archetype);
-  const showReciprocity = input.text.length > 100; // Trigger donation/reciprocity if deep
+  let mirrorReply = '';
+  try {
+    mirrorReply = await getReflectionSummary(input.text);
+  } catch (err) {
+    console.warn('Falling back to offline summary:', err);
+    mirrorReply = fallbackSummary(input.text, bpss, archetype);
+  }
+
+  const showReciprocity = input.text.length > 100;
 
   return {
     mirrorReply,
