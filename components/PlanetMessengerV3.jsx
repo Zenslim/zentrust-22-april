@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/planetMessenger.module.css';
@@ -106,19 +107,21 @@ export default function PlanetMessengerV3({ onPromptChange, reflectionSubmitted 
   const prompt = planet.prompts[promptIndex];
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <div className={`relative w-40 h-40 sm:w-56 sm:h-56 ${visible ? styles.planetEnter : ''}`}>
-        <Image
-          src={planet.image}
-          alt={planet.name}
-          fill
-          priority
-          className="object-contain drop-shadow-xl"
-        />
+    <div className="flex flex-col items-center justify-center">
+      <div className={`${visible ? styles.planetEnter : ''} flex flex-col items-center space-y-4`}>
+        <div className="relative w-40 h-40 sm:w-56 sm:h-56">
+          <Image
+            src={planet.image}
+            alt={planet.name}
+            fill
+            priority
+            className="object-contain drop-shadow-xl"
+          />
+        </div>
+        <p className="text-white text-lg sm:text-xl text-center max-w-md">
+          {prompt}
+        </p>
       </div>
-      <p className={`${styles.planetEnter} text-white text-lg sm:text-xl text-center max-w-md`}>
-        {prompt}
-      </p>
     </div>
   );
 }

@@ -1,18 +1,4 @@
 
-.planetContainer {
-  text-align: center;
-}
-
-.planetEnter {
-  animation: fadeZoom 2.5s ease-in-out forwards;
-}
-
-.message {
-  font-size: 1.5rem;
-  color: white;
-  margin-top: 1rem;
-}
-
 @keyframes fadeZoom {
   0% {
     opacity: 0;
@@ -26,4 +12,8 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.planetEnter {
+  animation: fadeZoom 2.5s ease-in-out forwards;
 }
