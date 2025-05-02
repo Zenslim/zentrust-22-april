@@ -27,7 +27,7 @@ export default function ZenboardClient() {
       imageMeta: image,
       timestamp: Date.now(),
       userId: 'anonymous',
-      celestialPrompt: currentPrompt,
+      celestialPrompt: currentPrompt
     });
 
     setResponse(result);
@@ -49,7 +49,7 @@ export default function ZenboardClient() {
       </div>
 
       <div className="absolute bottom-32 w-full flex flex-col items-center px-4 space-y-2">
-        {response && (
+        {response && !showSummary && (
           <div className="text-center space-y-2">
             <p className="text-purple-300 italic text-lg">{response.mirrorReply}</p>
             {response.mythicWhisper && (
@@ -69,6 +69,7 @@ export default function ZenboardClient() {
           className="w-full max-w-xl p-4 text-lg text-white bg-black bg-opacity-50 rounded-lg border border-white/10 backdrop-blur placeholder-white/50"
           rows={3}
         />
+
         <div className="flex items-center gap-4">
           <VoiceToText onResult={setReflection} />
           <ImageUpload onUpload={setImage} />
@@ -87,7 +88,8 @@ export default function ZenboardClient() {
       </div>
 
       <MirrorSummaryDrawer
-        summary={response?.mirrorReply}
+        summary={response?.mirrorReply || ''}
+        whisper={response?.mythicWhisper || ''}
         isOpen={showSummary}
         onClose={() => setShowSummary(false)}
       />
