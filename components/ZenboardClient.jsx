@@ -84,14 +84,13 @@ export default function ZenboardClient() {
           </button>
         </div>
       </div>
-
-      {showSummary && (
-        <MirrorSummaryDrawer
-          summary={reflections[reflections.length - 1]}
-          isOpen={showSummary}
-          onClose={() => setShowSummary(false)}
-        />
-      )}
+{showSummary && (
+  <MirrorSummaryDrawer
+    summary={reflections[reflections.length - 1]?.mirrorReply || ''}
+    isOpen={showSummary}
+    onClose={() => setShowSummary(false)}
+  />
+)}
     </div>
   );
 }
