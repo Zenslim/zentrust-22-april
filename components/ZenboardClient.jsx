@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import PlanetMessenger from '@/components/PlanetMessengerV3';
+import PlanetMessenger from '@/components/PlanetMessenger';
 import CelestialBackground from '@/components/CelestialBackground';
 import VoiceToText from '@/components/VoiceToText';
 import ImageUpload from '@/components/ImageUpload';
