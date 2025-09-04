@@ -19,6 +19,10 @@ export default function TermsOfService() {
         <p><strong>Disclaimer:</strong> ZenTrust is provided "as is" without warranties of any kind. Use at your own risk.</p>
 
         <p><strong>Changes:</strong> We may update these Terms from time to time. Continued use of ZenTrust means you accept the updated terms.</p>
+<p className="text-gray-500 text-sm mt-6">
+  ZenTrust, Inc. is a 501(c)(3) nonprofit (EIN: 33-4318487). 
+  Donations are tax-deductible as allowed by law.
+</p>
 
         <p className="pt-4">
           Questions? Contact us at: <a href="mailto:hello@zentrust.world" className="text-blue-600 underline">hello@zentrust.world</a>
