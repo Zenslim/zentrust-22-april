@@ -2,6 +2,7 @@ import '../styles/globals.css'
 import { useEffect } from 'react'
 import { auth } from '../firebase'
 import Header from '@/components/Header'; // ✅ Add this
+import Footer from "@/components/Footer"; // ✅ Add this
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
