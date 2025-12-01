@@ -1,9 +1,10 @@
 {
   "name": "zentrust-notion-site",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "tina build && next build",
+    "build": "npx @tinacms/cli build && next build",
     "start": "next start"
   },
   "engines": {
