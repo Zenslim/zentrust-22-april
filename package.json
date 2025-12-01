@@ -6,6 +6,9 @@
     "build": "tina build && next build",
     "start": "next start"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "dependencies": {
     "firebase": "^11.6.0",
     "next": "latest",
@@ -13,7 +16,6 @@
     "notion-client": "^4.13.2",
     "xml2js": "^0.6.2",
 
-    /* ✅ TinaCMS (Only correct packages, unified versions) */
     "tinacms": "^2.0.0",
     "tina-cms": "^2.0.0",
     "tina-graphql-gateway": "^2.0.0",
