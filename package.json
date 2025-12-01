@@ -17,7 +17,7 @@
     "xml2js": "^0.6.2",
 
     "tinacms": "^2.0.0",
-    "@tinacms/cli": "^2.0.0",
+    "@tinacms/cli": "^1.5.29",
     "@tinacms/graphql": "^2.0.0",
 
     "prismjs": "^1.29.0",
