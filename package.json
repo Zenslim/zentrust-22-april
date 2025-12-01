@@ -11,14 +11,14 @@
   },
   "dependencies": {
     "firebase": "^11.6.0",
-    "next": "latest",
+    "next": "14.2.4",
     "next-pwa": "^5.6.0",
     "notion-client": "^4.13.2",
     "xml2js": "^0.6.2",
 
     "tinacms": "^2.0.0",
-    "tina-graphql-gateway": "^2.0.0",
-    "tina-graphql-gateway-cli": "^2.0.0",
+    "@tinacms/cli": "^2.0.0",
+    "@tinacms/graphql": "^2.0.0",
 
     "prismjs": "^1.29.0",
 
