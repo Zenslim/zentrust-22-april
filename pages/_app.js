@@ -2,7 +2,10 @@ import "../styles/globals.css";
 import { useEffect } from "react";
 import { auth } from "../firebase";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer"; // ✅ NEW
+import Footer from "@/components/Footer";
+
+// ✅ TinaCMS imports
+import { TinaEditProvider, TinaCMS } from "tinacms";
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
@@ -22,17 +25,24 @@ export default function App({ Component, pageProps }) {
   }, []);
 
   return (
-    <div className="relative min-h-screen w-full bg-black text-white flex flex-col overflow-x-hidden">
-      {/* Global header on every page */}
-      <Header />
+    <TinaEditProvider
+      editMode={pageProps?.editMode}
+      tinaConfig={pageProps?.tinaConfig}
+    >
+      {/* Entire site layout */}
+      <div className="relative min-h-screen w-full bg-black text-white flex flex-col overflow-x-hidden">
 
-      {/* Page content */}
-      <main className="flex-1">
-        <Component {...pageProps} />
-      </main>
+        {/* Global Header */}
+        <Header />
 
-      {/* Global footer on every page */}
-      <Footer />
-    </div>
+        {/* Page Content */}
+        <main className="flex-1">
+          <Component {...pageProps} />
+        </main>
+
+        {/* Global Footer */}
+        <Footer />
+      </div>
+    </TinaEditProvider>
   );
 }
