@@ -18,7 +18,7 @@
 
     "tinacms": "^2.0.0",
     "@tinacms/cli": "^1.12.6",
-    "@tinacms/graphql": "^2.0.0",
+    "@tinacms/graphql": "^1.5.29",
 
     "prismjs": "^1.29.0",
 
