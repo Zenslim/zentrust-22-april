@@ -1,0 +1,52 @@
+{
+  "version": {
+    "fullVersion": "2.0.0",
+    "major": 2,
+    "minor": 0,
+    "patch": 0
+  },
+  "meta": {
+    "flags": [],
+    "legacy": false
+  },
+  "schema": {
+    "config": {
+      "branch": "main",
+      "clientId": "env:NEXT_PUBLIC_TINA_CLIENT_ID",
+      "token": "env:TINA_TOKEN",
+      "media": {
+        "tina": {
+          "publicFolder": "public",
+          "mediaRoot": "uploads"
+        }
+      },
+      "publicFolder": "public",
+      "outputFolder": "admin"
+    },
+    "collections": [
+      {
+        "name": "post",
+        "label": "Blog Posts",
+        "path": "content/blog",
+        "format": "md",
+        "ui": {
+          "filename": {
+            "slugify": "function"
+          }
+        },
+        "fields": [
+          { "name": "title", "type": "string", "label": "Title", "required": true },
+          { "name": "date", "type": "datetime", "label": "Published On" },
+          { "name": "tags", "type": "string", "list": true, "label": "Tags" },
+          { "name": "coverImage", "type": "image", "label": "Cover Image" },
+          {
+            "name": "body",
+            "type": "rich-text",
+            "label": "Content",
+            "isBody": true
+          }
+        ]
+      }
+    ]
+  }
+}
