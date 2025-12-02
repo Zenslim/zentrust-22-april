@@ -1,34 +1,18 @@
+"use client";
+
 import { useState } from "react";
-import Head from "next/head";
-import { missions, purposes } from "@/data/missionPurpose";
-import BeginJourneyButton from "@/components/BeginJourneyButton";
-import { parseStringPromise } from "xml2js";
 import { useSwipeable } from "react-swipeable";
 
-export async function getStaticProps() {
-  // Using your Hashnode Blog RSS feed
-  const feedUrl = "https://zentrust.hashnode.dev/rss.xml";
-  let items = [];
+import BeginJourneyButton from "@/components/BeginJourneyButton";
+import { missions, purposes } from "@/data/missionPurpose";
 
-  try {
-    const res = await fetch(feedUrl);
-    const text = await res.text();
-    const rss = await parseStringPromise(text);
-    items = (rss.rss?.channel?.[0]?.item || [])
-      .slice(0, 2)
-      .map((item) => ({
-        title: item.title?.[0] || "",
-        link: item.link?.[0] || "",
-        description: item.description?.[0] || "",
-      }));
-  } catch (e) {
-    items = [];
-  }
+type Article = {
+  title: string;
+  link: string;
+  description: string;
+};
 
-  return { props: { articles: items }, revalidate: 3600 };
-}
-
-export default function Home({ articles }) {
+export default function Page({ articles = [] }: { articles?: Article[] }) {
   const [missionIndex, setMissionIndex] = useState(0);
   const [purposeIndex, setPurposeIndex] = useState(0);
 
@@ -39,30 +23,18 @@ export default function Home({ articles }) {
     },
     onSwipedRight: () => {
       setMissionIndex((prev) => (prev - 1 + missions.length) % missions.length);
-      setPurposeIndex(
-        (prev) => (prev - 1 + purposes.length) % purposes.length
-      );
+      setPurposeIndex((prev) => (prev - 1 + purposes.length) % purposes.length);
     },
     trackMouse: true,
   });
 
-  const seoDescription =
-    "ZenTrust is a 501(c)(3) public charity advancing regenerative agriculture, ecological restoration, and holistic wellness through research, education, and community programs.";
-
   return (
     <>
-      <Head>
-        <title>ZenTrust | Regenerative Agriculture & Holistic Wellness</title>
-        <meta name="description" content={seoDescription} />
-        <link rel="canonical" href="https://www.zentrust.world" />
-      </Head>
-
       {/* ---------------------------- */}
       {/* HERO SECTION — NO HEADER HERE */}
       {/* ---------------------------- */}
 
       <div className="min-h-screen bg-black text-white flex flex-col items-center px-4 py-12 space-y-10">
-
         {/* Logo removed — global header already includes it */}
 
         {/* Main Title */}
@@ -198,3 +170,5 @@ export default function Home({ articles }) {
     </>
   );
 }
+
+// TODO: Convert legacy data-fetching logic to App Router format.

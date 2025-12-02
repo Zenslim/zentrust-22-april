@@ -1,24 +1,11 @@
-import Head from "next/head";
+// TODO: Convert metadata to App Router metadata export.
 
-export default function About() {
+export default function Page() {
   const seoDescription =
     "Learn about ZenTrust, a 501(c)(3) public charity dedicated to regenerative agriculture, ecological restoration, and holistic wellness through research, education, and community-based initiatives.";
 
   return (
     <>
-      <Head>
-        <title>About ZenTrust | Our Mission & Story</title>
-        <meta name="description" content={seoDescription} />
-        <link rel="canonical" href="https://www.zentrust.world/about" />
-        <meta
-          property="og:title"
-          content="About ZenTrust | Regenerative Agriculture & Holistic Wellness Nonprofit"
-        />
-        <meta property="og:description" content={seoDescription} />
-        <meta property="og:url" content="https://www.zentrust.world/about" />
-        <meta property="og:type" content="website" />
-      </Head>
-
       <main className="min-h-screen bg-black text-white px-4 py-12 flex flex-col items-center">
         <article className="w-full max-w-3xl space-y-8">
           <header className="text-center space-y-3">
