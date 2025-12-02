@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
+import type { AuthProvider } from "firebase/auth";
 import {
   auth,
   googleProvider,
@@ -10,10 +13,10 @@ import {
   signInWithEmailLink,
   setPersistence,
   browserLocalPersistence,
-} from "../firebase";
-import { useRouter } from "next/router";
+} from "../../firebase";
+import { useRouter } from "next/navigation";
 
-export default function Signin() {
+export default function Page() {
   const [view, setView] = useState("choose");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -35,7 +38,7 @@ export default function Signin() {
           .catch(() => setMessage("Magic link sign-in failed"));
       }
     }
-  }, []);
+  }, [router]);
 
   const handleMagicLink = async () => {
     const actionCodeSettings = {
@@ -54,7 +57,7 @@ export default function Signin() {
     }
   };
 
-  const handleProviderLogin = async (provider) => {
+  const handleProviderLogin = async (provider: AuthProvider) => {
     try {
       await signInWithPopup(auth, provider);
       router.push("/zenboard");
@@ -169,3 +172,5 @@ export default function Signin() {
     </div>
   );
 }
+
+// TODO: Convert /signin metadata to App Router metadata API.
