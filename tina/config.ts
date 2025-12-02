@@ -1,13 +1,19 @@
 import { defineConfig } from "tinacms";
 
 export default defineConfig({
-  branch: "main",
-  clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID,
-  token: process.env.TINA_TOKEN,
+  branch: "main", // still required even in standard workflow
+  clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID!, // new Client ID
+  token: process.env.TINA_TOKEN!, // Tina token from the new project
+
+  apiURL: `https://content.tinajs.io/api/plugins/core/1.0/projects/${
+    process.env.NEXT_PUBLIC_TINA_CLIENT_ID
+  }`,
+
   build: {
     outputFolder: "admin",
     publicFolder: "public",
   },
+
   media: {
     tina: {
       publicFolder: "public",
