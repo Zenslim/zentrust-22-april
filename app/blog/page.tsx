@@ -33,6 +33,10 @@ const BlogList: FC<BlogIndexProps> = ({ posts }) => {
   );
 };
 
+export default function Page() {
+  const posts: BlogPost[] = [];
+  // TODO: Replace with real data fetching for blog posts in the App Router.
+
 export default function Page({ posts }: BlogIndexProps) {
   return (
     <>
