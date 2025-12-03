@@ -1,0 +1,27 @@
+{
+  "members": [
+    {
+      "name": "Amina Flores",
+      "role": "Executive Director",
+      "bio": "Systems thinker stewarding partnerships across climate science, philanthropy, and local governance.",
+      "photo": "/images/team-amina.svg",
+      "socials": [{"platform": "LinkedIn", "url": "https://linkedin.com"}],
+      "status": "published"
+    },
+    {
+      "name": "Kofi Mensah",
+      "role": "Head of Regeneration",
+      "bio": "Agroforestry lead deploying regenerative pilots with smallholder farmers across West Africa.",
+      "photo": "/images/team-kofi.svg",
+      "socials": [{"platform": "Twitter", "url": "https://twitter.com"}],
+      "status": "published"
+    },
+    {
+      "name": "Lea Tan",
+      "role": "Impact Data Architect",
+      "bio": "Designs open impact data pipelines, remote sensing dashboards, and transparent reporting standards.",
+      "photo": "/images/team-lea.svg",
+      "status": "published"
+    }
+  ]
+}
