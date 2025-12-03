@@ -1,174 +1,127 @@
-"use client";
+import { Hero } from '@/components/hero/Hero';
+import { DonationCalculator } from '@/components/impact/DonationCalculator';
+import { ImpactCounters } from '@/components/impact/ImpactCounters';
+import { ProgramCard } from '@/components/programs/ProgramCard';
+import { NewsletterForm } from '@/components/layout/NewsletterForm';
+import { StoryCard } from '@/components/testimonials/StoryCard';
+import { TeamCard } from '@/components/team/TeamCard';
+import { getPage, getPrograms, getStories, getTeam } from '@/lib/content';
 
-import { useState } from "react";
-import { useSwipeable } from "react-swipeable";
+export const revalidate = 60;
 
-import BeginJourneyButton from "@/components/BeginJourneyButton";
-import { missions, purposes } from "@/data/missionPurpose";
-
-type Article = {
-  title: string;
-  link: string;
-  description: string;
-};
-
-export default function Page({ articles = [] }: { articles?: Article[] }) {
-  const [missionIndex, setMissionIndex] = useState(0);
-  const [purposeIndex, setPurposeIndex] = useState(0);
-
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => {
-      setMissionIndex((prev) => (prev + 1) % missions.length);
-      setPurposeIndex((prev) => (prev + 1) % purposes.length);
-    },
-    onSwipedRight: () => {
-      setMissionIndex((prev) => (prev - 1 + missions.length) % missions.length);
-      setPurposeIndex((prev) => (prev - 1 + purposes.length) % purposes.length);
-    },
-    trackMouse: true,
-  });
+export default async function HomePage() {
+  const [page, programs, stories, team] = await Promise.all([
+    getPage('home'),
+    getPrograms(),
+    getStories(),
+    getTeam(),
+  ]);
 
   return (
-    <>
-      {/* ---------------------------- */}
-      {/* HERO SECTION — NO HEADER HERE */}
-      {/* ---------------------------- */}
+    <div className="space-y-16">
+      <Hero
+        title={page?.title || 'Regeneration for people and planet'}
+        subtitle={page?.body || ''}
+        ctaLabel="Donate to regenerate"
+        ctaHref="/donate"
+        secondaryCta={{ label: 'Explore programs', href: '/programs' }}
+        image={page?.heroImage}
+      />
 
-      <div className="min-h-screen bg-black text-white flex flex-col items-center px-4 py-12 space-y-10">
-        {/* Logo removed — global header already includes it */}
+      <section className="section-shell">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-4">
+            <p className="text-sm uppercase tracking-[0.2em] text-emerald-200">Mission</p>
+            <h2 className="text-3xl font-semibold text-white">We rebuild living systems faster than climate disruption.</h2>
+            <p className="text-lg text-slate-200">
+              ZenTrust aligns Indigenous stewardship, regenerative science, and transparent technology so every donation lands where it
+              matters: restoring watersheds, backing land stewards, and proving impact in real-time.
+            </p>
+          </div>
+          <DonationCalculator />
+        </div>
+      </section>
 
-        {/* Main Title */}
-        <div className="w-full max-w-4xl text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold">
-            Healing Land. Uplifting Communities.
-            <br />
-            Advancing Regenerative Science.
-          </h1>
+      <section className="section-shell space-y-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-semibold text-white">Impact dashboard</h2>
+          <p className="text-sm text-slate-300">Edge-optimized counters refreshed automatically.</p>
+        </div>
+        <ImpactCounters />
+      </section>
 
-          <p className="text-gray-300 text-base sm:text-lg max-w-3xl mx-auto">
-            ZenTrust is a{" "}
-            <strong>501(c)(3) public charity (EIN 33-4318487)</strong>{" "}
-            advancing regenerative agriculture, ecological restoration, and
-            holistic wellness through scientific research, public education,
-            and community-based programs.
+      <section className="section-shell space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.2em] text-emerald-200">Programs</p>
+            <h2 className="text-3xl font-semibold text-white">Future-resilient initiatives</h2>
+          </div>
+          <a href="/programs" className="text-sm font-semibold text-emerald-200 hover:underline">
+            View all programs
+          </a>
+        </div>
+        <div className="card-grid">
+          {programs.slice(0, 3).map((program) => (
+            <ProgramCard
+              key={program.slug}
+              icon={program.icon}
+              title={program.title}
+              description={program.description}
+              metric={program.metric}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="section-shell space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.2em] text-emerald-200">Success stories</p>
+            <h2 className="text-3xl font-semibold text-white">Impact you can feel</h2>
+          </div>
+          <a href="/impact" className="text-sm font-semibold text-emerald-200 hover:underline">
+            Impact hub
+          </a>
+        </div>
+        <div className="card-grid">
+          {stories.slice(0, 3).map((story) => (
+            <StoryCard key={story.slug} title={story.title} summary={story.summary} image={story.image} link={story.link} />
+          ))}
+        </div>
+      </section>
+
+      <section className="section-shell grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-start">
+        <div className="space-y-4">
+          <p className="text-sm uppercase tracking-[0.2em] text-emerald-200">Stay ahead</p>
+          <h2 className="text-3xl font-semibold text-white">Get regenerative intelligence in your inbox</h2>
+          <p className="text-lg text-slate-200">
+            Join thousands of builders, donors, and land stewards receiving transparent updates, open data drops, and opportunities to
+            deploy capital where it counts.
           </p>
+        </div>
+        <NewsletterForm />
+      </section>
 
-          {/* Primary CTAs */}
-          <div className="flex flex-wrap justify-center gap-4 mt-4">
-            <a
-              href="/donate"
-              className="px-6 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
-            >
-              💚 Donate to Regeneration
-            </a>
-
-            <a
-              href="/about"
-              className="px-6 py-2.5 rounded-xl bg-white text-black font-medium hover:bg-gray-100 transition"
-            >
-              ℹ️ About ZenTrust
-            </a>
-
-            <a
-              href="/contact"
-              className="px-6 py-2.5 rounded-xl border border-white font-medium hover:bg-white hover:text-black transition"
-            >
-              📬 Contact Us
-            </a>
+      <section className="section-shell space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.2em] text-emerald-200">Team</p>
+            <h2 className="text-3xl font-semibold text-white">Stewards behind the mission</h2>
           </div>
         </div>
-
-        {/* Mission Slider */}
-        <section className="w-full max-w-xl text-center" {...swipeHandlers}>
-          <h2
-            className="text-2xl sm:text-3xl font-semibold text-transparent bg-gradient-to-r from-green-300 via-blue-500 to-purple-500 bg-clip-text"
-            dangerouslySetInnerHTML={{
-              __html: `"${missions[missionIndex].replace(
-                /trust/gi,
-                "<span class='text-green-400 font-bold'>trust</span>"
-              )}"`,
-            }}
-          />
-          <p className="text-gray-400 italic text-sm">{purposes[purposeIndex]}</p>
-        </section>
-
-        {/* Why / How / What / Blog */}
-        <div className="flex flex-wrap justify-center gap-4 mt-4">
-          <a href="/why" className="px-5 py-2 bg-white text-black rounded-xl">
-            🌱 Why Our Work Matters
-          </a>
-
-          <a
-            href="/how"
-            className="px-5 py-2 bg-black border border-white rounded-xl hover:bg-white hover:text-black"
-          >
-            ⚙️ How We Create Impact
-          </a>
-
-          <a
-            href="/what"
-            className="px-5 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700"
-          >
-            🌍 Programs & Initiatives
-          </a>
-
-          <a
-            href="https://zentrust.hashnode.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700"
-          >
-            📚 Blog & Research
-          </a>
+        <div className="card-grid">
+          {team.map((member) => (
+            <TeamCard
+              key={member.name}
+              name={member.name}
+              role={member.role}
+              bio={member.bio}
+              photo={member.photo}
+              socials={member.socials}
+            />
+          ))}
         </div>
-
-        <p className="text-blue-200 italic text-center max-w-xl">
-          "Rebuilding trust between people, land, and future generations —
-          through science, education, and regenerative practice."
-        </p>
-
-        <BeginJourneyButton />
-
-        {/* Blog Section */}
-        <section className="w-full max-w-5xl py-10">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-8">
-            Latest from the ZenTrust Blog
-          </h2>
-
-          <div className="flex flex-col md:flex-row gap-8 justify-center">
-            {articles.length ? (
-              articles.map((a, i) => (
-                <a
-                  key={i}
-                  href={a.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-6 bg-gray-800 rounded-xl hover:bg-gray-700 transition max-w-md"
-                >
-                  <h3 className="text-xl font-semibold">{a.title}</h3>
-                  <p className="text-gray-400 mt-2">
-                    {a.description?.slice(0, 120)}...
-                  </p>
-                </a>
-              ))
-            ) : (
-              <p className="text-center text-gray-400">
-                Blog updates coming soon. Visit{" "}
-                <a
-                  href="https://zentrust.hashnode.dev"
-                  target="_blank"
-                  className="underline hover:text-white"
-                >
-                  our Hashnode blog
-                </a>
-                .
-              </p>
-            )}
-          </div>
-        </section>
-      </div>
-    </>
+      </section>
+    </div>
   );
 }
-
-// TODO: Convert legacy data-fetching logic to App Router format.

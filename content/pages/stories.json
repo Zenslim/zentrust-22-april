@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "title": "Rain returns to the Anila watershed",
+      "slug": "anila-watershed",
+      "summary": "Local crews built living check-dams and planted riparian corridors, reviving perennial springs for 1,200 families.",
+      "image": "/images/story-watershed.svg",
+      "link": "/blog/anila-watershed",
+      "status": "published"
+    },
+    {
+      "title": "Farmers double yields with regenerative grains",
+      "slug": "regenerative-grains",
+      "summary": "Women-led cooperatives piloted drought-ready grains, cutting input costs and restoring topsoil.",
+      "image": "/images/story-farmers.svg",
+      "status": "published"
+    },
+    {
+      "title": "Research plots unlock community-led data",
+      "slug": "research-plots",
+      "summary": "Citizen scientists monitored soil moisture and carbon, informing adaptive planting calendars across three regions.",
+      "image": "/images/story-research.svg",
+      "link": "/blog/research-plots",
+      "status": "published"
+    }
+  ]
+}

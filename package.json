@@ -16,16 +16,12 @@
     "next-pwa": "^5.6.0",
     "notion-client": "^4.13.2",
     "xml2js": "^0.6.2",
-
     "tinacms": "^2.0.0",
     "@tinacms/cli": "^1.12.6",
     "@tinacms/graphql": "^1.5.29",
-
     "prismjs": "^1.29.0",
-
     "react": "18.3.1",
     "react-dom": "18.3.1",
-
     "react-markdown": "^9.0.0",
     "react-swipeable": "^7.0.0",
     "react-notion-x": "^7.3.0",
@@ -36,11 +32,19 @@
     "three": "^0.160.0",
     "date-fns": "^3.6.0",
     "react-textarea-autosize": "^8.3.4",
-    "react-chartjs-2": "^5.2.0"
+    "react-chartjs-2": "^5.2.0",
+    "gray-matter": "^4.0.3",
+    "marked": "^12.0.2",
+    "clsx": "^2.1.1",
+    "@tailwindcss/typography": "^0.5.15"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.21",
-    "tailwindcss": "^3.3.2"
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^4.0.0-alpha.16",
+    "typescript": "^5.4.5",
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0"
   }
 }

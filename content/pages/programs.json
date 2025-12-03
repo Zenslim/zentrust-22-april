@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "title": "Watershed Restoration Labs",
+      "slug": "watershed-restoration",
+      "description": "Community-led crews stabilize riverbanks, replant native species, and monitor water health with open sensors.",
+      "icon": "💧",
+      "metric": "62km riverbanks restored",
+      "status": "published"
+    },
+    {
+      "title": "Regenerative Farmer Network",
+      "slug": "farmer-network",
+      "description": "We train farmers on soil-first practices, microbial health, and carbon-smart cropping with peer mentorship.",
+      "icon": "🌱",
+      "metric": "8,400 households supported",
+      "status": "published"
+    },
+    {
+      "title": "Resilience Research Grants",
+      "slug": "research-grants",
+      "description": "We fund Indigenous-led experiments on drought-resilient crops, agroforestry, and watershed rehydration.",
+      "icon": "🔬",
+      "metric": "48 projects funded",
+      "status": "published"
+    }
+  ]
+}

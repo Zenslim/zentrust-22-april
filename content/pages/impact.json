@@ -1,0 +1,12 @@
+{
+  "title": "Impact dashboard",
+  "slug": "impact",
+  "heroImage": "/images/impact-hero.svg",
+  "body": "We measure living systems outcomes: water retention, canopy recovery, farmer income resilience, and soil carbon health.",
+  "seo": {
+    "title": "Impact | ZenTrust",
+    "description": "Live counters and proof of change from ZenTrust regenerative programs.",
+    "image": "/images/og-impact.svg"
+  },
+  "status": "published"
+}

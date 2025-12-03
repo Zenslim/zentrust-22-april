@@ -1,0 +1,12 @@
+{
+  "title": "Donate to accelerate regeneration",
+  "slug": "donate",
+  "heroImage": "/images/donate.svg",
+  "body": "Every contribution equips stewards with seeds, soil science, and open data to restore our shared watersheds.",
+  "seo": {
+    "title": "Donate | ZenTrust",
+    "description": "Give to regenerative science, watershed restoration, and community resilience.",
+    "image": "/images/og-donate.svg"
+  },
+  "status": "published"
+}
